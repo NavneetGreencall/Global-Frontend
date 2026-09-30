@@ -1,0 +1,19 @@
+{
+  "name": "Sapling Global Field Operations",
+  "short_name": "SG Field",
+  "description": "Field verification visits with GPS check-in, geo-tagged photo evidence and offline drafts.",
+  "start_url": "/field-executive",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f7f6f1",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/brand/sapling-global-mark.png?v=20260907",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
