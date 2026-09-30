@@ -1,0 +1,389 @@
+/* =====================================================================
+   Account security page
+   ---------------------------------------------------------------------
+   Reuses the shared pieces from ReleasedReports.css:
+     page-header, page-title, summary-card, filter-select, empty-state,
+     visually-hidden
+   and adds the sessions and activity panels below. The page background
+   comes from ControlTower.css (same on every page).
+   ===================================================================== */
+
+.security-page {
+  /* Same colour set as the other pages */
+  --green: #22a65a;
+  --green-dark: #15653c;
+  --green-gradient: linear-gradient(135deg, #5ad37f 0%, #22a65a 45%, #15653c 100%);
+  --card-gradient: linear-gradient(135deg, #c9f0d6 0%, #e4f7eb 45%, #ffffff 100%);
+  --card-border: #d3eedc;
+
+  --text: #13241b;
+  --text-muted: #5a6e62;
+  --text-faint: #8fa198;
+
+  --white: #ffffff;
+  --line: #e6eee9;
+  --hover: #f6fbf8;
+
+  --red: #c0392b;
+  --red-soft: #fdeceb;
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Three summary cards on this page */
+.security-page .summary-cards {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.security-page .summary-card-alert .summary-card-value {
+  color: var(--red);
+}
+
+.security-page .summary-card-alert .summary-card-icon {
+  background: linear-gradient(135deg, #ff8a7a, #c0392b);
+}
+
+/* ---------------------------------------------------------------------
+   Header with the "Change password" button
+   --------------------------------------------------------------------- */
+
+.security-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.change-password-button {
+  height: 42px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--green-gradient);
+  color: var(--white);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 20px -12px rgba(21, 101, 60, 0.9);
+  transition: transform 0.15s;
+}
+
+.change-password-button:hover {
+  transform: translateY(-1px);
+}
+
+/* ---------------------------------------------------------------------
+   Panels (sessions, activity)
+   --------------------------------------------------------------------- */
+
+.security-panel {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 10px 28px -22px rgba(16, 40, 28, 0.35);
+  overflow: hidden;
+}
+
+.security-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.security-panel-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.security-panel-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------------------
+   Sessions
+   --------------------------------------------------------------------- */
+
+.session-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.session-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.session-row:last-child {
+  border-bottom: 0;
+}
+
+.session-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-gradient);
+  border: 1px solid var(--card-border);
+  color: var(--green-dark);
+}
+
+.session-body {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.session-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Friendly browser name, e.g. "Edge 154 on Windows" */
+.session-agent-short {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--green-dark);
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #eaf7ef;
+}
+
+/* The full technical string, shortened with "…" (hover shows it all) */
+.session-agent {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.session-meta {
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.this-device-pill {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 11px;
+  border-radius: 999px;
+  background: #e3f5ea;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green-dark);
+}
+
+.this-device-pill i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+}
+
+/* Revoke buttons and the "are you sure?" bar */
+.revoke-button,
+.revoke-all-button {
+  flex-shrink: 0;
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  background: var(--white);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.revoke-button:hover,
+.revoke-all-button:hover {
+  background: var(--red-soft);
+  border-color: #f4cfc9;
+  color: var(--red);
+}
+
+.revoke-confirm {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.revoke-yes,
+.revoke-no {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.revoke-yes {
+  border: 0;
+  background: var(--red);
+  color: var(--white);
+}
+
+.revoke-no {
+  border: 1px solid var(--card-border);
+  background: var(--white);
+  color: var(--text);
+}
+
+/* ---------------------------------------------------------------------
+   Authentication activity
+   --------------------------------------------------------------------- */
+
+.activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.activity-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.activity-row:last-child {
+  border-bottom: 0;
+}
+
+.activity-row:hover {
+  background: var(--hover);
+}
+
+/* Type pill: one colour per kind of event */
+.activity-pill {
+  flex-shrink: 0;
+  min-width: 88px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.activity-login { background: #e3f5ea; color: var(--green-dark); }
+.activity-failed { background: var(--red-soft); color: var(--red); }
+.activity-password { background: #efeafd; color: #5634b8; }
+.activity-anomaly { background: #fef1e2; color: #c96410; }
+
+.activity-body {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.activity-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.activity-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.activity-time {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.show-more-button {
+  width: 100%;
+  height: 44px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--green-dark);
+  cursor: pointer;
+}
+
+.show-more-button:hover {
+  background: var(--hover);
+}
+
+/* ---------------------------------------------------------------------
+   Smaller screens
+   --------------------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .security-page .summary-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .session-row,
+  .activity-row {
+    flex-wrap: wrap;
+  }
+  .session-body {
+    flex-basis: calc(100% - 54px);
+  }
+  .this-device-pill,
+  .revoke-button,
+  .revoke-confirm {
+    margin-left: 54px;
+  }
+  .revoke-confirm {
+    flex-wrap: wrap;
+  }
+  .activity-time {
+    width: 100%;
+    padding-left: 92px;
+  }
+}

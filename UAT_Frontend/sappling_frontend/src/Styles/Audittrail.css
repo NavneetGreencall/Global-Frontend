@@ -1,0 +1,350 @@
+/* =====================================================================
+   Audit trail page
+   ---------------------------------------------------------------------
+   Reuses the shared pieces from ReleasedReports.css:
+     page-header, page-title, summary-card, search-box, filter-select,
+     empty-state, action-button, pager, visually-hidden
+   and adds the event log below. The page background comes from
+   ControlTower.css (same on every page).
+   ===================================================================== */
+
+.audit-page {
+  /* Same colour set as the other pages */
+  --green: #22a65a;
+  --green-dark: #15653c;
+  --green-gradient: linear-gradient(135deg, #5ad37f 0%, #22a65a 45%, #15653c 100%);
+  --card-gradient: linear-gradient(135deg, #c9f0d6 0%, #e4f7eb 45%, #ffffff 100%);
+  --card-border: #d3eedc;
+
+  --text: #13241b;
+  --text-muted: #5a6e62;
+  --text-faint: #8fa198;
+
+  --white: #ffffff;
+  --line: #e6eee9;
+  --hover: #f6fbf8;
+
+  --red: #c0392b;
+  --mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Four summary cards on this page */
+.audit-page .summary-cards {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.audit-page .summary-card-alert .summary-card-value {
+  color: var(--red);
+}
+
+.audit-page .summary-card-alert .summary-card-icon {
+  background: linear-gradient(135deg, #ff8a7a, #c0392b);
+}
+
+/* ---------------------------------------------------------------------
+   Header with the "Export current page" button
+   --------------------------------------------------------------------- */
+
+.audit-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.audit-export-button {
+  height: 42px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--green-gradient);
+  color: var(--white);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 20px -12px rgba(21, 101, 60, 0.9);
+  transition: transform 0.15s;
+}
+
+.audit-export-button:hover {
+  transform: translateY(-1px);
+}
+
+/* ---------------------------------------------------------------------
+   Event log card
+   --------------------------------------------------------------------- */
+
+.audit-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 10px 28px -22px rgba(16, 40, 28, 0.35);
+  overflow: hidden;
+}
+
+.audit-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.audit-toolbar .search-box {
+  width: 320px;
+}
+
+.audit-toolbar .filter-select select {
+  min-width: 170px;
+}
+
+.audit-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.audit-count strong {
+  color: var(--text);
+}
+
+.audit-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* One event */
+.audit-event {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+  transition: background 0.15s;
+}
+
+.audit-event:last-child {
+  border-bottom: 0;
+}
+
+.audit-event:hover {
+  background: var(--hover);
+}
+
+/* A failed action gets a soft red background */
+.audit-failed {
+  background: #fff8f7;
+}
+
+.audit-failed:hover {
+  background: #fdf0ee;
+}
+
+.audit-event-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Category pill: one colour per category */
+.category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.category-pill i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.category-access { background: #e6f0fb; color: #1f6fc1; }
+.category-security { background: #fdeceb; color: var(--red); }
+.category-configuration { background: #efeafd; color: #5634b8; }
+.category-case { background: #e3f5ea; color: var(--green-dark); }
+.category-report { background: #dff3f4; color: #0e7677; }
+
+.audit-action {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.audit-failed .audit-action {
+  color: var(--red);
+}
+
+.audit-resource {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  word-break: break-all;
+}
+
+.copy-button {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+/* Copy button shows on hover (always on touch screens and keyboard focus) */
+.audit-event:hover .copy-button,
+.copy-button:focus-visible {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .copy-button {
+    opacity: 1;
+  }
+}
+
+.copy-button:hover {
+  background: var(--white);
+  color: var(--green-dark);
+}
+
+.audit-time {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Who, where, which request */
+.audit-meta {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.audit-meta strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.audit-dot {
+  margin: 0 6px;
+  color: var(--text-faint);
+}
+
+/* What changed: field, old value → new value */
+.audit-changes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.audit-change {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--card-gradient);
+  border: 1px solid var(--card-border);
+  font-size: 12px;
+}
+
+.audit-change-field {
+  font-family: var(--mono);
+  font-weight: 600;
+  color: var(--green-dark);
+}
+
+.audit-change-from {
+  color: var(--text-faint);
+  text-decoration: line-through;
+}
+
+.audit-change-arrow {
+  color: var(--text-faint);
+}
+
+.audit-change-to {
+  min-width: 0;
+  color: var(--text);
+  word-break: break-word;
+}
+
+/* Footer */
+.audit-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.audit-footer strong {
+  color: var(--text);
+}
+
+/* ---------------------------------------------------------------------
+   Smaller screens
+   --------------------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .audit-page .summary-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .audit-toolbar .search-box {
+    width: 100%;
+  }
+  .audit-count {
+    margin-left: 0;
+  }
+  .audit-time {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .audit-page .summary-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

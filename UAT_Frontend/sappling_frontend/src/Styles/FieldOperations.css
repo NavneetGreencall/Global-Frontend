@@ -1,0 +1,67 @@
+/* =====================================================================
+   Field operations — reuses the Exceptions list + green-to-white cards
+   ===================================================================== */
+
+/* Status colours */
+.field-row.is-slate, .field-tabs .is-slate { --st: #52606b; --st-soft: #eef1f3; --sev: #8a979f; --sev-grad: linear-gradient(135deg, #b9c4cb, #52606b); }
+.field-row.is-blue, .field-tabs .is-blue { --st: #1f6fc1; --st-soft: #e6f0fb; --sev: #2b7fd4; --sev-grad: linear-gradient(135deg, #7ab8f5, #1f6fc1); }
+.field-row.is-amber, .field-tabs .is-amber { --st: #9a6a05; --st-soft: #fdf4d9; --sev: #d99412; --sev-grad: linear-gradient(135deg, #ffe07a, #cf8a06); }
+.field-row.is-green, .field-tabs .is-green { --st: var(--brand-3); --st-soft: #e3f5ea; --sev: #22a65a; --sev-grad: var(--brand-grad); }
+.field-row.is-red, .field-tabs .is-red { --st: #c0392b; --st-soft: #fdeceb; --sev: #d64545; --sev-grad: linear-gradient(135deg, #ff8a7a, #c0392b); }
+.field-tabs .is-slate:first-child { --sev: #22a65a; --sev-grad: var(--brand-grad); }
+
+/* Row layout for visits */
+.list-row.field-row {
+  grid-template-columns: minmax(280px, 1.5fr) minmax(140px, 0.7fr) minmax(240px, 1.4fr) minmax(170px, 0.8fr) auto;
+}
+
+.field-avatar {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: linear-gradient(145deg, #c9f0d6 0%, #eaf8ef 60%, #ffffff 100%);
+  border: 1px solid #d3eedc;
+  color: var(--brand-3); font-size: 14px; font-weight: 700;
+}
+
+.field-status {
+  display: inline-flex; align-items: center; gap: 5px;
+  height: 22px; padding: 0 9px; border-radius: 999px;
+  background: var(--st-soft); color: var(--st);
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.field-status i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+.field-executive { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; color: var(--ink); white-space: nowrap; }
+.field-executive-icon { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: #eef6f1; color: var(--brand-3); }
+
+.field-location { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 500; color: var(--ink); }
+.field-location svg { color: var(--brand-2); flex-shrink: 0; }
+
+.field-geofence { display: flex; flex-direction: column; gap: 4px; font-size: 11px; }
+.field-geofence-text, .field-geofence.is-unknown { display: inline-flex; flex-direction: row; align-items: center; gap: 5px; }
+.field-geofence.is-inside { color: var(--brand-3); }
+.field-geofence.is-outside { color: #c0392b; font-weight: 600; }
+.field-geofence.is-unknown { color: var(--ink-3); }
+.field-geofence-track { height: 4px; max-width: 160px; border-radius: 999px; background: #eef2f0; overflow: hidden; }
+.field-geofence-track span { display: block; height: 100%; border-radius: inherit; background: var(--brand-grad); transform-origin: left; animation: bar-grow 0.8s cubic-bezier(.2,.7,.2,1) both; }
+.field-geofence.is-outside .field-geofence-track span { background: linear-gradient(90deg, #ff8a7a, #c0392b); }
+
+/* Pager */
+.field-pager { display: flex; gap: 6px; }
+.field-pager button {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--rule-strong); background: #fff; color: var(--ink-2); cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.field-pager button:hover:not(:disabled) { background: var(--green-faint); border-color: var(--brand-2); color: var(--brand-3); }
+.field-pager button:disabled { opacity: 0.4; cursor: default; }
+
+@media (max-width: 1200px) {
+  .list-row.field-row { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.4fr) minmax(0, 0.9fr) auto; }
+  .list-row.field-row > .row-cell:nth-child(2) { display: none; }
+}
+@media (max-width: 860px) {
+  .list-row.field-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .list-row.field-row > .row-cell:nth-child(2) { display: flex; }
+}

@@ -1,0 +1,420 @@
+/* =====================================================================
+   Platform settings page
+   ---------------------------------------------------------------------
+   Reuses the shared pieces from ReleasedReports.css:
+     page-header, page-title, filter-select, visually-hidden
+   and adds tabs and settings cards below. The page background comes
+   from ControlTower.css (same on every page).
+   ===================================================================== */
+
+.settings-page {
+  /* Same colour set as the other pages */
+  --green: #22a65a;
+  --green-dark: #15653c;
+  --green-gradient: linear-gradient(135deg, #5ad37f 0%, #22a65a 45%, #15653c 100%);
+  --card-gradient: linear-gradient(135deg, #c9f0d6 0%, #e4f7eb 45%, #ffffff 100%);
+  --card-border: #d3eedc;
+
+  --text: #13241b;
+  --text-muted: #5a6e62;
+  --text-faint: #8fa198;
+
+  --white: #ffffff;
+  --line: #e6eee9;
+  --hover: #f6fbf8;
+
+  --red: #c0392b;
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 1100px;
+}
+
+/* ---------------------------------------------------------------------
+   Header
+   --------------------------------------------------------------------- */
+
+.settings-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.audit-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+a.audit-link {
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--white);
+  border: 1px solid var(--card-border);
+  font-weight: 600;
+  color: var(--green-dark);
+  text-decoration: none;
+}
+
+a.audit-link:hover {
+  background: var(--hover);
+}
+
+/* ---------------------------------------------------------------------
+   Tabs
+   --------------------------------------------------------------------- */
+
+.settings-tabs {
+  align-self: flex-start;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  box-shadow: 0 6px 18px -16px rgba(16, 40, 28, 0.4);
+}
+
+.settings-tab {
+  height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.settings-tab:hover {
+  color: var(--text);
+  background: var(--hover);
+}
+
+.settings-tab.is-active {
+  background: var(--green-gradient);
+  color: var(--white);
+  font-weight: 600;
+  box-shadow: 0 6px 14px -8px rgba(21, 101, 60, 0.8);
+}
+
+.settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---------------------------------------------------------------------
+   Settings card
+   --------------------------------------------------------------------- */
+
+.settings-card {
+  border-radius: 18px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 28px -22px rgba(16, 40, 28, 0.35);
+  overflow: hidden;
+}
+
+.settings-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--card-gradient);
+  border-bottom: 1px solid var(--card-border);
+}
+
+.settings-card-header > div {
+  flex-grow: 1;
+}
+
+.settings-card-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.settings-card-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.workspace-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--white);
+  border: 1px solid var(--card-border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green-dark);
+}
+
+.workspace-status i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+}
+
+.settings-edit-button {
+  height: 32px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--card-border);
+  border-radius: 9px;
+  background: var(--white);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green-dark);
+  cursor: pointer;
+}
+
+.settings-edit-button:hover {
+  background: var(--hover);
+}
+
+/* Rows: label on the left, value on the right */
+.settings-list {
+  margin: 0;
+}
+
+.settings-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.settings-row:last-child {
+  border-bottom: 0;
+}
+
+.settings-row dt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.settings-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.settings-value {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+/* On / Off text for toggles when not editing */
+.settings-changed {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #eef1f3;
+  font-size: 12px;
+  font-weight: 600;
+  color: #52606b;
+}
+
+.settings-changed.is-on {
+  background: #e3f5ea;
+  color: var(--green-dark);
+}
+
+/* ---------------------------------------------------------------------
+   Inputs (edit mode)
+   --------------------------------------------------------------------- */
+
+.settings-input {
+  width: 100%;
+  max-width: 320px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  background: var(--white);
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.settings-input:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(34, 166, 90, 0.12);
+}
+
+.settings-number {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-number .settings-input {
+  width: 110px;
+}
+
+.settings-unit {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.settings-select select {
+  min-width: 220px;
+}
+
+/* On / off switch */
+.settings-toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: #d5ddd8;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.settings-toggle.is-on {
+  background: var(--green-gradient);
+}
+
+.settings-toggle-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--white);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s;
+}
+
+.settings-toggle.is-on .settings-toggle-knob {
+  transform: translateX(20px);
+}
+
+.settings-toggle:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+/* Save / cancel bar */
+.settings-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--line);
+  background: #fafdfb;
+}
+
+.settings-actions .audit-note,
+.settings-error {
+  margin-right: auto;
+}
+
+.settings-error {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--red);
+}
+
+.cancel-button,
+.save-button {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancel-button {
+  border: 1px solid var(--card-border);
+  background: var(--white);
+  color: var(--text);
+}
+
+.cancel-button:hover {
+  background: var(--hover);
+}
+
+.save-button {
+  border: 0;
+  background: var(--green-gradient);
+  color: var(--white);
+}
+
+.save-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* "Saved" message */
+.settings-saved {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 10px 20px;
+  border-top: 1px solid var(--card-border);
+  background: var(--card-gradient);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green-dark);
+}
+
+/* ---------------------------------------------------------------------
+   Smaller screens
+   --------------------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  .settings-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .settings-actions {
+    flex-wrap: wrap;
+  }
+  .settings-actions .audit-note,
+  .settings-error {
+    width: 100%;
+  }
+  .settings-tabs {
+    align-self: stretch;
+    overflow-x: auto;
+  }
+}

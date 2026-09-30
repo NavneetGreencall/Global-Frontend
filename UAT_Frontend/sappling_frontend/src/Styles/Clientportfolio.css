@@ -1,0 +1,300 @@
+/* =====================================================================
+   Client portfolio oversight page
+   ---------------------------------------------------------------------
+   Reuses the shared pieces from ReleasedReports.css:
+     page-header, page-title, summary-card, empty-icon
+   and adds the two panels below. The page background comes from
+   ControlTower.css (same on every page).
+   ===================================================================== */
+
+.portfolio-page {
+  /* Same colour set as the other pages */
+  --green: #22a65a;
+  --green-dark: #15653c;
+  --green-gradient: linear-gradient(135deg, #5ad37f 0%, #22a65a 45%, #15653c 100%);
+  --card-gradient: linear-gradient(135deg, #c9f0d6 0%, #e4f7eb 45%, #ffffff 100%);
+  --card-border: #d3eedc;
+
+  --text: #13241b;
+  --text-muted: #5a6e62;
+  --text-faint: #8fa198;
+
+  --white: #ffffff;
+  --line: #e6eee9;
+  --hover: #f6fbf8;
+
+  --red: #c0392b;
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Four summary cards on this page */
+.portfolio-page .summary-cards {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* A summary card that needs attention shows its number in red */
+.portfolio-page .summary-card-alert .summary-card-value {
+  color: var(--red);
+}
+
+.portfolio-page .summary-card-alert .summary-card-icon {
+  background: linear-gradient(135deg, #ff8a7a, #c0392b);
+}
+
+/* ---------------------------------------------------------------------
+   Two panels side by side
+   --------------------------------------------------------------------- */
+
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+  gap: 16px;
+  align-items: stretch; /* both panels share the same height */
+}
+
+.portfolio-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px 20px 20px;
+  border-radius: 18px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 28px -22px rgba(16, 40, 28, 0.35);
+}
+
+.portfolio-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.portfolio-panel-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.portfolio-panel-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------------------
+   Response pressure
+   --------------------------------------------------------------------- */
+
+.response-empty {
+  flex-grow: 1; /* fills the panel so the message sits in the middle */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 20px 12px;
+  text-align: center;
+}
+
+.response-empty strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.response-empty p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.response-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.response-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--card-gradient);
+  border: 1px solid var(--card-border);
+}
+
+.response-client strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.response-age {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.response-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(21, 101, 60, 0.08);
+  overflow: hidden;
+}
+
+.response-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--green-gradient);
+}
+
+.response-count {
+  min-width: 28px;
+  text-align: right;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--green-dark);
+}
+
+/* ---------------------------------------------------------------------
+   Portfolio stage mix
+   --------------------------------------------------------------------- */
+
+.stage-total {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--card-gradient);
+  border: 1px solid var(--card-border);
+  font-size: 12px;
+  color: var(--green-dark);
+}
+
+.stage-total strong {
+  font-weight: 700;
+}
+
+/* One bar split by stage */
+.stage-bar {
+  display: flex;
+  gap: 3px;
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #eef2f0;
+}
+
+.stage-bar-segment {
+  flex-basis: 0;
+  min-width: 6px;
+}
+
+/* One row per stage */
+.stage-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+a.stage-row {
+  display: grid;
+  grid-template-columns: 12px minmax(120px, 1fr) minmax(80px, 1.4fr) 40px 32px 14px;
+  gap: 12px;
+  align-items: center;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--text-faint);
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+a.stage-row:hover {
+  background: var(--card-gradient);
+  border-color: var(--card-border);
+  color: var(--green-dark);
+}
+
+.stage-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.stage-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.stage-track {
+  height: 6px;
+  border-radius: 999px;
+  background: #eef2f0;
+  overflow: hidden;
+}
+
+.stage-track-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.stage-share {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.stage-count {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: right;
+}
+
+/* ---------------------------------------------------------------------
+   Smaller screens
+   --------------------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .portfolio-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .portfolio-page .summary-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .portfolio-page .summary-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .portfolio-panel-header {
+    flex-wrap: wrap; /* badge moves under the title */
+  }
+  a.stage-row {
+    grid-template-columns: 12px minmax(0, 1fr) 40px 32px;
+  }
+  .stage-track,
+  a.stage-row svg {
+    display: none;
+  }
+}
