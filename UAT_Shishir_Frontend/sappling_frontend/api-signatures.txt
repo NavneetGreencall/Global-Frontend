@@ -1,0 +1,2816 @@
+﻿===== src\lib\backend-api\users.ts =====
+import { apiRequest } from "./client";
+import { toIndianMobileE164 } from "@/lib/indian-mobile";
+
+export interface DirectoryUser {
+  id: string;
+  displayName: string;
+  email: string;
+  phone?: string | null;
+  status: string;
+  mustChangePassword: boolean;
+  lastLoginAt?: string | null;
+  createdAt: string;
+  version: number;
+import { toIndianMobileE164 } from "@/lib/indian-mobile";
+
+export interface DirectoryUser {
+  id: string;
+  displayName: string;
+  email: string;
+  phone?: string | null;
+  status: string;
+  mustChangePassword: boolean;
+  lastLoginAt?: string | null;
+  createdAt: string;
+  version: number;
+  branch?: { publicId: string; code: string; name: string } | null;
+export interface DirectoryUser {
+  id: string;
+  displayName: string;
+  email: string;
+  phone?: string | null;
+  status: string;
+  mustChangePassword: boolean;
+  lastLoginAt?: string | null;
+  createdAt: string;
+  version: number;
+  branch?: { publicId: string; code: string; name: string } | null;
+  client?: { publicId: string; displayName: string } | null;
+  roles: Array<{ code: string; name: string }>;
+export interface DirectoryRole {
+  id: string;
+  code: string;
+  name: string;
+  permissions: string[];
+  isSystem: boolean;
+}
+
+export function listRoles() {
+  return apiRequest<{ items: DirectoryRole[] }>("/users/roles");
+}
+
+export interface UserCreationPolicy {
+export function listRoles() {
+  return apiRequest<{ items: DirectoryRole[] }>("/users/roles");
+}
+
+export interface UserCreationPolicy {
+  enabled: boolean;
+  roles: string[];
+  branches: Array<{ id: string; name: string; city?: string | null }>;
+  tenantWideAllowed: boolean;
+}
+
+/** Roles and branches the signed-in actor may assign; the API enforces every rule. */
+export function getUserCreationPolicy() {
+export interface UserCreationPolicy {
+  enabled: boolean;
+  roles: string[];
+  branches: Array<{ id: string; name: string; city?: string | null }>;
+  tenantWideAllowed: boolean;
+}
+
+/** Roles and branches the signed-in actor may assign; the API enforces every rule. */
+export function getUserCreationPolicy() {
+  return apiRequest<UserCreationPolicy>("/users/creation-policy");
+}
+
+export function createUser(input: {
+export function getUserCreationPolicy() {
+  return apiRequest<UserCreationPolicy>("/users/creation-policy");
+}
+
+export function createUser(input: {
+  email: string;
+  displayName: string;
+  phone?: string;
+  branchId?: string;
+  clientId?: string;
+  spocClientIds?: string[];
+  roleCodes: string[];
+  additionalAccessConfirmed?: boolean;
+export function createUser(input: {
+  email: string;
+  displayName: string;
+  phone?: string;
+  branchId?: string;
+  clientId?: string;
+  spocClientIds?: string[];
+  roleCodes: string[];
+  additionalAccessConfirmed?: boolean;
+  temporaryPassword: string;
+}) {
+  const phone = toIndianMobileE164(input.phone);
+  return apiRequest<{
+export function updateUser(
+  userId: string,
+  input: {
+    version: number;
+    status?: "ACTIVE" | "SUSPENDED";
+    roleCodes?: string[];
+    additionalAccessConfirmed?: boolean;
+    spocClientIds?: string[];
+  },
+) {
+  return apiRequest<{ id: string; version: number }>(`/users/${userId}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+export function resetUserPassword(userId: string, temporaryPassword: string) {
+  return apiRequest<{ reset: true }>(`/users/${userId}/reset-password`, {
+    method: "POST",
+    body: JSON.stringify({ temporaryPassword }),
+  });
+}
+
+export interface UserDirectoryInput {
+  search?: string;
+  role?: string;
+  status?: "ACTIVE" | "SUSPENDED" | "INVITED";
+  page?: number;
+  pageSize?: number;
+export interface UserDirectoryInput {
+  search?: string;
+  role?: string;
+  status?: "ACTIVE" | "SUSPENDED" | "INVITED";
+  page?: number;
+  pageSize?: number;
+}
+
+export interface UserDirectoryResponse {
+  items: DirectoryUser[];
+  total: number;
+  page: number;
+  pageSize: number;
+export interface UserDirectoryResponse {
+  items: DirectoryUser[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export function listUsers(input: UserDirectoryInput = {}) {
+  const query = new URLSearchParams();
+  if (input.search) query.set("search", input.search);
+  if (input.role) query.set("role", input.role);
+  if (input.status) query.set("status", input.status);
+  query.set("page", String(input.page ?? 1));
+export function listUsers(input: UserDirectoryInput = {}) {
+  const query = new URLSearchParams();
+  if (input.search) query.set("search", input.search);
+  if (input.role) query.set("role", input.role);
+  if (input.status) query.set("status", input.status);
+  query.set("page", String(input.page ?? 1));
+  query.set("pageSize", String(input.pageSize ?? 10));
+  return apiRequest<UserDirectoryResponse>(`/users?${query.toString()}`);
+}
+
+export async function listAllUsers(role?: string) {
+  const items: DirectoryUser[] = [];
+  let page = 1;
+export async function listAllUsers(role?: string) {
+  const items: DirectoryUser[] = [];
+  let page = 1;
+  let total = Number.POSITIVE_INFINITY;
+  while (items.length < total) {
+    const response = await listUsers({ role, page, pageSize: 100 });
+    items.push(...response.items);
+    total = response.total;
+    if (!response.items.length) break;
+    page += 1;
+  }
+  return { items, total: Number.isFinite(total) ? total : items.length };
+}
+export interface UserActivityEvent {
+  id: string;
+  action: string;
+  resourceType: string;
+  resourcePublicId?: string | null;
+  requestId?: string | null;
+  ipAddress?: string | null;
+  locationLabel?: string | null;
+  beforeJson?: string | null;
+  afterJson?: string | null;
+  createdAt: string;
+  actor?: { displayName: string; email: string } | null;
+}
+export interface UserActivityResponse {
+  user: { id: string; displayName: string; email: string };
+  items: UserActivityEvent[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export function getUserActivity(userId: string, input: { page?: number; pageSize?: number } = {}) {
+  const query = new URLSearchParams({
+    page: String(input.page ?? 1),
+    pageSize: String(input.pageSize ?? 10),
+  });
+export function getUserActivity(userId: string, input: { page?: number; pageSize?: number } = {}) {
+  const query = new URLSearchParams({
+    page: String(input.page ?? 1),
+    pageSize: String(input.pageSize ?? 10),
+  });
+  return apiRequest<UserActivityResponse>(`/users/${userId}/activity?${query.toString()}`);
+}
+===== src\lib\backend-api\settings.ts =====
+import { apiRequest } from "./client";
+
+export interface Organisation {
+  publicId: string;
+  name: string;
+  timezone: string;
+  status: string;
+}
+
+export interface FieldPolicy {
+  publicId: string;
+  defaultRadiusMeters: number;
+  maxAccuracyMeters: number;
+export interface Organisation {
+  publicId: string;
+  name: string;
+  timezone: string;
+  status: string;
+}
+
+export interface FieldPolicy {
+  publicId: string;
+  defaultRadiusMeters: number;
+  maxAccuracyMeters: number;
+  minimumPhotos: number;
+  retentionDays: number;
+export interface FieldPolicy {
+  publicId: string;
+  defaultRadiusMeters: number;
+  maxAccuracyMeters: number;
+  minimumPhotos: number;
+  retentionDays: number;
+  requireCheckout: boolean;
+  outsideGeofencePolicy: "BLOCK" | "SUPERVISOR_APPROVAL" | "ALLOW_AND_FLAG";
+  version: number;
+  updatedAt: string;
+}
+export interface Branch {
+  id: string;
+export interface Branch {
+  id: string;
+  code: string;
+  name: string;
+  city?: string | null;
+  isActive: boolean;
+  fieldExecutiveCount: number;
+  createdAt: string;
+}
+export interface ServicePackage {
+  id: string;
+  code: string;
+  name: string;
+export interface ServicePackage {
+  id: string;
+  code: string;
+  name: string;
+  checks: string[];
+  serviceFamily: string;
+  requiredDocuments: string[];
+  updatedAt: string;
+  price?: string | number | null;
+  tatHours: number;
+  isActive: boolean;
+  createdAt: string;
+}
+export function getOrganisation() {
+  return apiRequest<Organisation>("/settings/organisation");
+}
+
+export interface AccessPolicy {
+  publicId: string;
+  opsUserCreationEnabled: boolean;
+  version: number;
+  updatedAt: string;
+}
+
+export function getAccessPolicy() {
+  return apiRequest<AccessPolicy>("/settings/access-policy");
+export interface AccessPolicy {
+  publicId: string;
+  opsUserCreationEnabled: boolean;
+  version: number;
+  updatedAt: string;
+}
+
+export function getAccessPolicy() {
+  return apiRequest<AccessPolicy>("/settings/access-policy");
+}
+export function updateAccessPolicy(
+  input: Pick<AccessPolicy, "opsUserCreationEnabled" | "version">,
+) {
+export function getAccessPolicy() {
+  return apiRequest<AccessPolicy>("/settings/access-policy");
+}
+export function updateAccessPolicy(
+  input: Pick<AccessPolicy, "opsUserCreationEnabled" | "version">,
+) {
+  return apiRequest<AccessPolicy>("/settings/access-policy", {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+export function getFieldPolicy() {
+export function updateAccessPolicy(
+  input: Pick<AccessPolicy, "opsUserCreationEnabled" | "version">,
+) {
+  return apiRequest<AccessPolicy>("/settings/access-policy", {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+export function getFieldPolicy() {
+  return apiRequest<FieldPolicy>("/settings/field-policy");
+}
+export function updateFieldPolicy(input: Omit<FieldPolicy, "publicId" | "updatedAt">) {
+export function getFieldPolicy() {
+  return apiRequest<FieldPolicy>("/settings/field-policy");
+}
+export function updateFieldPolicy(input: Omit<FieldPolicy, "publicId" | "updatedAt">) {
+  return apiRequest<FieldPolicy>("/settings/field-policy", {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+export function listBranches() {
+  return apiRequest<{ items: Branch[] }>("/settings/branches");
+}
+export function createBranch(input: { code: string; name: string; city?: string }) {
+export function updateFieldPolicy(input: Omit<FieldPolicy, "publicId" | "updatedAt">) {
+  return apiRequest<FieldPolicy>("/settings/field-policy", {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+export function listBranches() {
+  return apiRequest<{ items: Branch[] }>("/settings/branches");
+}
+export function createBranch(input: { code: string; name: string; city?: string }) {
+  return apiRequest<Branch>("/settings/branches", { method: "POST", body: JSON.stringify(input) });
+}
+export function listServicePackages() {
+export function listBranches() {
+  return apiRequest<{ items: Branch[] }>("/settings/branches");
+}
+export function createBranch(input: { code: string; name: string; city?: string }) {
+  return apiRequest<Branch>("/settings/branches", { method: "POST", body: JSON.stringify(input) });
+}
+export function listServicePackages() {
+  return apiRequest<{ items: ServicePackage[] }>("/settings/service-packages");
+}
+export function createServicePackage(input: {
+  code: string;
+  name: string;
+  checks: string[];
+export function createBranch(input: { code: string; name: string; city?: string }) {
+  return apiRequest<Branch>("/settings/branches", { method: "POST", body: JSON.stringify(input) });
+}
+export function listServicePackages() {
+  return apiRequest<{ items: ServicePackage[] }>("/settings/service-packages");
+}
+export function createServicePackage(input: {
+  code: string;
+  name: string;
+  checks: string[];
+  price?: number;
+  tatHours: number;
+  serviceFamily?: string;
+export function listServicePackages() {
+  return apiRequest<{ items: ServicePackage[] }>("/settings/service-packages");
+}
+export function createServicePackage(input: {
+  code: string;
+  name: string;
+  checks: string[];
+  price?: number;
+  tatHours: number;
+  serviceFamily?: string;
+  requiredDocuments?: string[];
+}) {
+  return apiRequest<ServicePackage>("/settings/service-packages", {
+export function createServicePackage(input: {
+  code: string;
+  name: string;
+  checks: string[];
+  price?: number;
+  tatHours: number;
+  serviceFamily?: string;
+  requiredDocuments?: string[];
+}) {
+  return apiRequest<ServicePackage>("/settings/service-packages", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+export function updatePackageRequirements(
+  id: string,
+  input: { updatedAt: string; requiredDocuments: string[] },
+) {
+  return apiRequest(`/settings/service-packages/${id}/requirements`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+/** One Main Vendor with its Admin-set team limit and current team counts. */
+export interface VendorTeamLimit {
+  id: string;
+export interface VendorTeamLimit {
+  id: string;
+  name: string;
+  email: string;
+  status: string;
+  limit: number;
+  /** Policy version for the optimistic save; 0 when no limit was ever set. */
+  version: number;
+  activeTeamUsers: number;
+  inactiveTeamUsers: number;
+}
+
+export function listVendorTeamLimits() {
+export function listVendorTeamLimits() {
+  return apiRequest<{ maxLimit: number; items: VendorTeamLimit[] }>("/settings/vendor-team-limits");
+}
+
+export function updateVendorTeamLimit(
+  vendorId: string,
+  input: { maxActiveUsers: number; version: number },
+) {
+  return apiRequest<{ id: string; limit: number; version: number; activeTeamUsers: number }>(
+    `/settings/vendor-team-limits/${encodeURIComponent(vendorId)}`,
+    { method: "PATCH", body: JSON.stringify(input) },
+  );
+}
+export function updateVendorTeamLimit(
+  vendorId: string,
+  input: { maxActiveUsers: number; version: number },
+) {
+  return apiRequest<{ id: string; limit: number; version: number; activeTeamUsers: number }>(
+    `/settings/vendor-team-limits/${encodeURIComponent(vendorId)}`,
+    { method: "PATCH", body: JSON.stringify(input) },
+  );
+}
+===== src\lib\backend-api\cases.ts =====
+import type { CaseDraft } from "@/features/cases/new-case/model";
+import { toIndianMobileE164 } from "@/lib/indian-mobile";
+import { apiDownload, apiRequest, saveBlob } from "./client";
+import type { CaseServiceScope } from "./case-services";
+
+export type ClientOption = {
+  publicId: string;
+  code: string;
+  legalName: string;
+  displayName: string;
+  contactName?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+import { toIndianMobileE164 } from "@/lib/indian-mobile";
+import { apiDownload, apiRequest, saveBlob } from "./client";
+import type { CaseServiceScope } from "./case-services";
+
+export type ClientOption = {
+  publicId: string;
+  code: string;
+  legalName: string;
+  displayName: string;
+  contactName?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  status: string;
+import { apiDownload, apiRequest, saveBlob } from "./client";
+import type { CaseServiceScope } from "./case-services";
+
+export type ClientOption = {
+  publicId: string;
+  code: string;
+  legalName: string;
+  displayName: string;
+  contactName?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  status: string;
+  slaHours: number;
+import type { CaseServiceScope } from "./case-services";
+
+export type ClientOption = {
+  publicId: string;
+  code: string;
+  legalName: string;
+  displayName: string;
+  contactName?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  status: string;
+  slaHours: number;
+  version: number;
+export type ClientOption = {
+  publicId: string;
+  code: string;
+  legalName: string;
+  displayName: string;
+  contactName?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  status: string;
+  slaHours: number;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+export type CaseServicePackage = {
+  id: string;
+  code: string;
+  name: string;
+  checks: string[];
+  serviceFamily?: string;
+  requiredDocuments?: string[];
+  price?: string | number | null;
+  tatHours: number;
+};
+
+export interface CaseListItem {
+  id: string;
+export interface CaseListItem {
+  id: string;
+  caseNumber: string;
+  externalRef?: string | null;
+  status: string;
+  priority: string;
+  dueAt?: string | null;
+  completedAt?: string | null;
+  riskLevel?: string | null;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+  subject: {
+export interface CaseDetail extends CaseListItem {
+  qaReviewer?: { publicId: string; displayName: string; email: string } | null;
+  statusHistory: Array<{
+    fromStatus?: string | null;
+    toStatus: string;
+    reason?: string | null;
+    createdAt: string;
+  }>;
+  consents: Array<{
+    publicId: string;
+    status: string;
+    purpose: string;
+    noticeVersion: string;
+export interface CaseListQueryInput {
+  risk?: string;
+  owner?: string;
+  ownerId?: string;
+  unassigned?: boolean;
+  dueToday?: boolean;
+  dueNext7Days?: boolean;
+  view?: "all" | "operations";
+  search?: string;
+  status?: string;
+  stage?: string;
+  clientId?: string;
+  priority?: string;
+export interface CaseListResponse {
+  items: CaseListItem[];
+  nextCursor: string | null;
+  total: number;
+  page?: number;
+  pageSize?: number;
+}
+
+export function listCases(input: CaseListQueryInput = {}, signal?: AbortSignal) {
+  const query = new URLSearchParams();
+  for (const key of [
+    "risk",
+    "owner",
+export function listCases(input: CaseListQueryInput = {}, signal?: AbortSignal) {
+  const query = new URLSearchParams();
+  for (const key of [
+    "risk",
+    "owner",
+    "ownerId",
+    "unassigned",
+    "dueToday",
+    "dueNext7Days",
+    "view",
+  ] as const) {
+    if (input[key] !== undefined) query.set(key, String(input[key]));
+  }
+export function getCase(caseId: string) {
+  return apiRequest<CaseDetail>(`/cases/${caseId}`);
+}
+
+export async function exportCases(input: Omit<CaseListQueryInput, "cursor" | "limit"> = {}) {
+  const query = new URLSearchParams();
+  for (const key of [
+    "risk",
+    "owner",
+    "ownerId",
+    "unassigned",
+    "dueToday",
+    "dueNext7Days",
+export async function exportCases(input: Omit<CaseListQueryInput, "cursor" | "limit"> = {}) {
+  const query = new URLSearchParams();
+  for (const key of [
+    "risk",
+    "owner",
+    "ownerId",
+    "unassigned",
+    "dueToday",
+    "dueNext7Days",
+    "view",
+  ] as const) {
+    if (input[key] !== undefined) query.set(key, String(input[key]));
+  }
+export interface ClientListResponse {
+  items: ClientOption[];
+  nextCursor: string | null;
+  total: number;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface ClientListInput {
+  search?: string;
+  status?: string;
+  cursor?: string;
+  limit?: number;
+export interface ClientListInput {
+  search?: string;
+  status?: string;
+  cursor?: string;
+  limit?: number;
+  page?: number;
+  pageSize?: number;
+}
+
+export function listClients(): Promise<ClientListResponse>;
+export function listClients(input: {
+  search?: string;
+  status?: string;
+export function listClients(): Promise<ClientListResponse>;
+export function listClients(input: {
+  search?: string;
+  status?: string;
+  cursor?: string;
+  limit?: number;
+  page?: number;
+  pageSize?: number;
+}): Promise<ClientListResponse>;
+export function listClients(input: ClientListInput = {}) {
+  const query = new URLSearchParams({ limit: String(input.limit ?? 100) });
+  if (input.search) query.set("search", input.search);
+  if (input.status) query.set("status", input.status);
+export function listClients(input: {
+  search?: string;
+  status?: string;
+  cursor?: string;
+  limit?: number;
+  page?: number;
+  pageSize?: number;
+}): Promise<ClientListResponse>;
+export function listClients(input: ClientListInput = {}) {
+  const query = new URLSearchParams({ limit: String(input.limit ?? 100) });
+  if (input.search) query.set("search", input.search);
+  if (input.status) query.set("status", input.status);
+  if (input.cursor) query.set("cursor", input.cursor);
+export function listClients(input: ClientListInput = {}) {
+  const query = new URLSearchParams({ limit: String(input.limit ?? 100) });
+  if (input.search) query.set("search", input.search);
+  if (input.status) query.set("status", input.status);
+  if (input.cursor) query.set("cursor", input.cursor);
+  if (input.page) query.set("page", String(input.page));
+  if (input.pageSize) query.set("pageSize", String(input.pageSize));
+  return apiRequest<ClientListResponse>(`/clients?${query.toString()}`);
+}
+
+export async function listAllClients(search?: string) {
+  const items: ClientOption[] = [];
+  const seen = new Set<string>();
+export async function listAllClients(search?: string) {
+  const items: ClientOption[] = [];
+  const seen = new Set<string>();
+  let cursor: string | undefined;
+  do {
+    const page = await listClients({ search, cursor, limit: 100 });
+    items.push(...page.items);
+    if (!page.nextCursor) break;
+    if (seen.has(page.nextCursor)) throw new Error("Client pagination returned a repeated cursor");
+    seen.add(page.nextCursor);
+    cursor = page.nextCursor;
+  } while (cursor);
+  return items;
+export function createClient(input: {
+  code: string;
+  legalName: string;
+  displayName: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  slaHours: number;
+}) {
+  const contactPhone = toIndianMobileE164(input.contactPhone);
+  return apiRequest<ClientOption>("/clients", {
+    method: "POST",
+    body: JSON.stringify({ ...input, contactPhone }),
+export function updateClient(
+  clientId: string,
+  input: {
+    version: number;
+    legalName?: string;
+    displayName?: string;
+    contactName?: string;
+    contactEmail?: string;
+    contactPhone?: string;
+    slaHours?: number;
+    status?: "ACTIVE" | "SUSPENDED";
+  },
+) {
+export function listCaseServicePackages(clientId?: string) {
+  const query = clientId ? `?${new URLSearchParams({ clientId })}` : "";
+  return apiRequest<{ items: CaseServicePackage[] }>(`/cases/catalog${query}`);
+}
+
+export function createCase(draft: CaseDraft, idempotencyKey?: string) {
+  return apiRequest<{
+    id: string;
+    caseNumber: string;
+    status: string;
+    consentDelivery: {
+      consentId: string;
+      expiresAt: string;
+export function createCase(draft: CaseDraft, idempotencyKey?: string) {
+  return apiRequest<{
+    id: string;
+    caseNumber: string;
+    status: string;
+    consentDelivery: {
+      consentId: string;
+      expiresAt: string;
+      developmentOtp?: string;
+    };
+  }>("/cases", {
+    method: "POST",
+    headers: idempotencyKey ? { "idempotency-key": idempotencyKey } : undefined,
+export function transitionCase(
+  caseId: string,
+  input: { status: string; version: number; reason?: string },
+) {
+  return apiRequest<CaseDetail>(`/cases/${caseId}/status`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+===== src\lib\backend-api\case-services.ts =====
+export interface CaseServiceScope {
+  publicId: string;
+  serviceFamily: string;
+  tatHours: number;
+  requiredDocuments: string[];
+  servicePackage: { publicId: string; code: string; name: string };
+  checks: Array<{
+    publicId: string;
+    type: string;
+    status: string;
+    result?: string | null;
+    dueAt?: string | null;
+  }>;
+export function casePackageName(row: {
+  services?: CaseServiceScope[];
+  servicePackage?: { name: string } | null;
+}) {
+  return row.services?.length
+    ? row.services.map((service) => service.servicePackage.name).join(" + ")
+    : (row.servicePackage?.name ?? null);
+}
+===== src\lib\backend-api\case-approvals.ts =====
+import { apiDownload, apiRequest, saveBlob } from "./client";
+
+export interface CaseApproval {
+  caseStatus: string;
+  caseVersion: number;
+  canApprove: boolean;
+  legacyApprovalRequired: boolean;
+  latestQa: {
+    id: string;
+    decision: string;
+    notes: string | null;
+    reviewerName: string;
+    createdAt: string;
+export interface CaseApproval {
+  caseStatus: string;
+  caseVersion: number;
+  canApprove: boolean;
+  legacyApprovalRequired: boolean;
+  latestQa: {
+    id: string;
+    decision: string;
+    notes: string | null;
+    reviewerName: string;
+    createdAt: string;
+  } | null;
+  reviews: Array<{
+export function getCaseApproval(caseId: string) {
+  return apiRequest<CaseApproval>(`/cases/${caseId}/approval`);
+}
+
+export function submitManagerReview(
+  caseId: string,
+  input: {
+    caseVersion: number;
+    decision: "APPROVED" | "REWORK";
+    notes: string;
+    recommendation?: string;
+    highRiskAcknowledged?: boolean;
+  },
+export function submitManagerReview(
+  caseId: string,
+  input: {
+    caseVersion: number;
+    decision: "APPROVED" | "REWORK";
+    notes: string;
+    recommendation?: string;
+    highRiskAcknowledged?: boolean;
+  },
+) {
+  return apiRequest<{ id: string; caseStatus: string; caseVersion: number; reportId?: string }>(
+    `/cases/${caseId}/manager-review`,
+    { method: "POST", body: JSON.stringify(input) },
+export function reopenCase(
+  caseId: string,
+  input: { caseVersion: number; notes: string; checkIds: string[] },
+) {
+  return apiRequest<{ caseStatus: string; caseVersion: number }>(`/cases/${caseId}/reopen`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function releaseReport(caseId: string, reportId: string) {
+  return apiRequest<{ id: string; status: string }>(
+    `/cases/${caseId}/reports/${reportId}/release`,
+export function releaseReport(caseId: string, reportId: string) {
+  return apiRequest<{ id: string; status: string }>(
+    `/cases/${caseId}/reports/${reportId}/release`,
+    { method: "POST" },
+  );
+}
+
+export async function previewReport(reportId: string, caseNumber: string) {
+  saveBlob(
+    await apiDownload(`/reports/${reportId}/preview`),
+    `Sapling-internal-review-${caseNumber}.pdf`,
+  );
+}
+export async function previewReport(reportId: string, caseNumber: string) {
+  saveBlob(
+    await apiDownload(`/reports/${reportId}/preview`),
+    `Sapling-internal-review-${caseNumber}.pdf`,
+  );
+}
+
+export function renewReportAccess(reportId: string) {
+  return apiRequest<{ id: string; downloadExpiresAt: string }>(
+    `/reports/${reportId}/download-access`,
+    { method: "POST" },
+  );
+}
+export function renewReportAccess(reportId: string) {
+  return apiRequest<{ id: string; downloadExpiresAt: string }>(
+    `/reports/${reportId}/download-access`,
+    { method: "POST" },
+  );
+}
+===== src\lib\backend-api\qa.ts =====
+import { apiRequest } from "./client";
+
+export interface QaQueueItem {
+  id: string;
+  caseNumber: string;
+  priority: string;
+  dueAt?: string | null;
+  version: number;
+  createdAt: string;
+  qaClaimedAt?: string | null;
+  qaReviewer?: { publicId: string; displayName: string } | null;
+  subject: { publicId: string; fullName: string };
+  client: { publicId: string; displayName: string };
+export interface QaQueueItem {
+  id: string;
+  caseNumber: string;
+  priority: string;
+  dueAt?: string | null;
+  version: number;
+  createdAt: string;
+  qaClaimedAt?: string | null;
+  qaReviewer?: { publicId: string; displayName: string } | null;
+  subject: { publicId: string; fullName: string };
+  client: { publicId: string; displayName: string };
+  checks: Array<{
+    publicId: string;
+export function getQaQueue(input: { search?: string; cursor?: string; limit?: number } = {}) {
+  const query = new URLSearchParams();
+  if (input.search) query.set("search", input.search);
+  if (input.cursor) query.set("cursor", input.cursor);
+  query.set("limit", String(input.limit ?? 25));
+  return apiRequest<{
+    items: QaQueueItem[];
+    nextCursor: string | null;
+    summary: { awaiting: number; overdue: number; highRisk: number; claimed: number };
+  }>(`/qa/queue?${query.toString()}`);
+}
+
+export function claimQaCase(caseId: string, caseVersion: number) {
+export function claimQaCase(caseId: string, caseVersion: number) {
+  return apiRequest<{ id: string; claimedBy: string; caseVersion: number }>(
+    `/qa/cases/${caseId}/claim`,
+    { method: "POST", body: JSON.stringify({ caseVersion }) },
+  );
+}
+
+export function changeQaReservation(
+  caseId: string,
+  caseVersion: number,
+  action: "renew" | "release",
+) {
+  return apiRequest<{ id: string; caseVersion: number }>(`/qa/cases/${caseId}/${action}`, {
+export function changeQaReservation(
+  caseId: string,
+  caseVersion: number,
+  action: "renew" | "release",
+) {
+  return apiRequest<{ id: string; caseVersion: number }>(`/qa/cases/${caseId}/${action}`, {
+    method: "POST",
+    body: JSON.stringify({ caseVersion }),
+  });
+}
+
+export function submitQaDecision(
+  caseId: string,
+export function submitQaDecision(
+  caseId: string,
+  input: {
+    decision: "APPROVED" | "REWORK";
+    caseVersion: number;
+    checklist: string[];
+    notes?: string;
+    reworkCheckIds: string[];
+  },
+) {
+  return apiRequest<{
+    id: string;
+    decision: string;
+===== src\lib\backend-api\qa-register.ts =====
+import { apiRequest } from "./client";
+import type { QaQueueItem } from "./qa";
+
+export type QaRegisterView = "all" | "available" | "mine" | "corrections";
+export interface QaRegisterItem extends Omit<QaQueueItem, "checks" | "documents" | "fieldVisits"> {
+  status: string;
+  checkCount: number;
+  completedCheckCount: number;
+  documentCount: number;
+  highestRisk: string | null;
+  claimActive: boolean;
+  correctionReason: string | null;
+}
+import type { QaQueueItem } from "./qa";
+
+export type QaRegisterView = "all" | "available" | "mine" | "corrections";
+export interface QaRegisterItem extends Omit<QaQueueItem, "checks" | "documents" | "fieldVisits"> {
+  status: string;
+  checkCount: number;
+  completedCheckCount: number;
+  documentCount: number;
+  highestRisk: string | null;
+  claimActive: boolean;
+  correctionReason: string | null;
+}
+export interface QaDecisionRecord {
+export type QaRegisterView = "all" | "available" | "mine" | "corrections";
+export interface QaRegisterItem extends Omit<QaQueueItem, "checks" | "documents" | "fieldVisits"> {
+  status: string;
+  checkCount: number;
+  completedCheckCount: number;
+  documentCount: number;
+  highestRisk: string | null;
+  claimActive: boolean;
+  correctionReason: string | null;
+}
+export interface QaDecisionRecord {
+  publicId: string;
+  decision: string;
+export interface QaRegisterItem extends Omit<QaQueueItem, "checks" | "documents" | "fieldVisits"> {
+  status: string;
+  checkCount: number;
+  completedCheckCount: number;
+  documentCount: number;
+  highestRisk: string | null;
+  claimActive: boolean;
+  correctionReason: string | null;
+}
+export interface QaDecisionRecord {
+  publicId: string;
+  decision: string;
+  notes: string | null;
+export interface QaDecisionRecord {
+  publicId: string;
+  decision: string;
+  notes: string | null;
+  createdAt: string;
+  case: {
+    publicId: string;
+    caseNumber: string;
+    status: string;
+    subject: { fullName: string };
+    client: { displayName: string };
+    reports: Array<{ status: string; currentVersion: number }>;
+  };
+export interface QaPage<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+export function getQaRegister(input: Query = {}, signal?: AbortSignal) {
+  return apiRequest<
+    QaPage<QaRegisterItem> & {
+      summary: { awaiting: number; overdue: number; highRisk: number; claimed: number };
+    }
+  >(`/qa/register?${params(input)}`, { signal });
+}
+export function getQaRegister(input: Query = {}, signal?: AbortSignal) {
+  return apiRequest<
+    QaPage<QaRegisterItem> & {
+      summary: { awaiting: number; overdue: number; highRisk: number; claimed: number };
+    }
+  >(`/qa/register?${params(input)}`, { signal });
+}
+export function getQaDetail(caseId: string, signal?: AbortSignal) {
+  return apiRequest<QaQueueItem>(`/qa/cases/${caseId}`, { signal });
+}
+export function getQaHistory(input: Query = {}, signal?: AbortSignal) {
+  return apiRequest<QaPage<QaDecisionRecord>>(`/qa/history?${params(input)}`, { signal });
+}
+export function getQaDetail(caseId: string, signal?: AbortSignal) {
+  return apiRequest<QaQueueItem>(`/qa/cases/${caseId}`, { signal });
+}
+export function getQaHistory(input: Query = {}, signal?: AbortSignal) {
+  return apiRequest<QaPage<QaDecisionRecord>>(`/qa/history?${params(input)}`, { signal });
+}
+function params(input: Query) {
+  const query = new URLSearchParams({
+    page: String(input.page ?? 1),
+    limit: String(input.limit ?? 25),
+    view: input.view ?? "all",
+  });
+  if (input.search?.trim()) query.set("search", input.search.trim());
+export function getQaHistory(input: Query = {}, signal?: AbortSignal) {
+  return apiRequest<QaPage<QaDecisionRecord>>(`/qa/history?${params(input)}`, { signal });
+}
+function params(input: Query) {
+  const query = new URLSearchParams({
+    page: String(input.page ?? 1),
+    limit: String(input.limit ?? 25),
+    view: input.view ?? "all",
+  });
+  if (input.search?.trim()) query.set("search", input.search.trim());
+  return query.toString();
+}
+===== src\lib\backend-api\field-visits.ts =====
+import type {
+  ApiFieldVisit,
+  FieldDraft,
+  FieldExecutionPolicy,
+  OfflinePhoto,
+} from "@/features/field/types";
+import type { GeoFix } from "@/components/field/geo";
+import { apiRequest } from "./client";
+import { apiDownload, saveBlob } from "./client";
+import { openDocumentPreview } from "./document-preview";
+import { fileSha256 } from "./file-digest";
+
+export function getMyFieldVisits() {
+import type { GeoFix } from "@/components/field/geo";
+import { apiRequest } from "./client";
+import { apiDownload, saveBlob } from "./client";
+import { openDocumentPreview } from "./document-preview";
+import { fileSha256 } from "./file-digest";
+
+export function getMyFieldVisits() {
+  return apiRequest<{ items: ApiFieldVisit[]; policy: FieldExecutionPolicy }>("/field-visits/mine");
+}
+
+export async function getFieldAssignees(caseId: string) {
+  const items: Array<{ id: string; displayName: string; email: string }> = [];
+  for (let page = 1; ; page += 1) {
+import { apiRequest } from "./client";
+import { apiDownload, saveBlob } from "./client";
+import { openDocumentPreview } from "./document-preview";
+import { fileSha256 } from "./file-digest";
+
+export function getMyFieldVisits() {
+  return apiRequest<{ items: ApiFieldVisit[]; policy: FieldExecutionPolicy }>("/field-visits/mine");
+}
+
+export async function getFieldAssignees(caseId: string) {
+  const items: Array<{ id: string; displayName: string; email: string }> = [];
+  for (let page = 1; ; page += 1) {
+    const result = await apiRequest<{ items: typeof items; total: number }>(
+import { apiDownload, saveBlob } from "./client";
+import { openDocumentPreview } from "./document-preview";
+import { fileSha256 } from "./file-digest";
+
+export function getMyFieldVisits() {
+  return apiRequest<{ items: ApiFieldVisit[]; policy: FieldExecutionPolicy }>("/field-visits/mine");
+}
+
+export async function getFieldAssignees(caseId: string) {
+  const items: Array<{ id: string; displayName: string; email: string }> = [];
+  for (let page = 1; ; page += 1) {
+    const result = await apiRequest<{ items: typeof items; total: number }>(
+      `/cases/${caseId}/field-assignees?page=${page}&pageSize=100`,
+import { openDocumentPreview } from "./document-preview";
+import { fileSha256 } from "./file-digest";
+
+export function getMyFieldVisits() {
+  return apiRequest<{ items: ApiFieldVisit[]; policy: FieldExecutionPolicy }>("/field-visits/mine");
+}
+
+export async function getFieldAssignees(caseId: string) {
+  const items: Array<{ id: string; displayName: string; email: string }> = [];
+  for (let page = 1; ; page += 1) {
+    const result = await apiRequest<{ items: typeof items; total: number }>(
+      `/cases/${caseId}/field-assignees?page=${page}&pageSize=100`,
+    );
+import { fileSha256 } from "./file-digest";
+
+export function getMyFieldVisits() {
+  return apiRequest<{ items: ApiFieldVisit[]; policy: FieldExecutionPolicy }>("/field-visits/mine");
+}
+
+export async function getFieldAssignees(caseId: string) {
+  const items: Array<{ id: string; displayName: string; email: string }> = [];
+  for (let page = 1; ; page += 1) {
+    const result = await apiRequest<{ items: typeof items; total: number }>(
+      `/cases/${caseId}/field-assignees?page=${page}&pageSize=100`,
+    );
+    items.push(...result.items);
+export function getMyFieldVisits() {
+  return apiRequest<{ items: ApiFieldVisit[]; policy: FieldExecutionPolicy }>("/field-visits/mine");
+}
+
+export async function getFieldAssignees(caseId: string) {
+  const items: Array<{ id: string; displayName: string; email: string }> = [];
+  for (let page = 1; ; page += 1) {
+    const result = await apiRequest<{ items: typeof items; total: number }>(
+      `/cases/${caseId}/field-assignees?page=${page}&pageSize=100`,
+    );
+    items.push(...result.items);
+    if (result.items.length === 0 || items.length >= result.total) return { items };
+  }
+export async function getFieldAssignees(caseId: string) {
+  const items: Array<{ id: string; displayName: string; email: string }> = [];
+  for (let page = 1; ; page += 1) {
+    const result = await apiRequest<{ items: typeof items; total: number }>(
+      `/cases/${caseId}/field-assignees?page=${page}&pageSize=100`,
+    );
+    items.push(...result.items);
+    if (result.items.length === 0 || items.length >= result.total) return { items };
+  }
+}
+
+export function createFieldVisit(
+  caseId: string,
+export function createFieldVisit(
+  caseId: string,
+  input: {
+    address: string;
+    latitude: number;
+    longitude: number;
+    geofenceMeters?: number;
+    assigneeId: string;
+  },
+) {
+  return apiRequest<{
+    id: string;
+    status: string;
+export function reviewFieldException(
+  visitId: string,
+  input: { decision: "APPROVE" | "RETRY"; version: number; note?: string },
+) {
+  return apiRequest<{ id: string; status: string; version: number }>(
+    `/field-visits/${visitId}/exception`,
+    { method: "PATCH", body: JSON.stringify(input) },
+  );
+}
+
+export async function viewFieldEvidence(evidenceId: string) {
+  return openDocumentPreview(() => apiDownload(`/field-evidence/${evidenceId}/content`));
+}
+export async function viewFieldEvidence(evidenceId: string) {
+  return openDocumentPreview(() => apiDownload(`/field-evidence/${evidenceId}/content`));
+}
+
+export async function downloadFieldEvidence(evidenceId: string) {
+  const blob = await apiDownload(`/field-evidence/${evidenceId}/content`);
+  const extension =
+    blob.type === "image/png" ? "png" : blob.type === "application/pdf" ? "pdf" : "jpg";
+  saveBlob(blob, `field-evidence-${evidenceId}.${extension}`);
+}
+
+export async function uploadVisitEvidence(visitId: string, photo: OfflinePhoto) {
+  const body = new FormData();
+export async function downloadFieldEvidence(evidenceId: string) {
+  const blob = await apiDownload(`/field-evidence/${evidenceId}/content`);
+  const extension =
+    blob.type === "image/png" ? "png" : blob.type === "application/pdf" ? "pdf" : "jpg";
+  saveBlob(blob, `field-evidence-${evidenceId}.${extension}`);
+}
+
+export async function uploadVisitEvidence(visitId: string, photo: OfflinePhoto) {
+  const body = new FormData();
+  body.append("file", photo.blob, photo.name);
+  const digest = await fileSha256(photo.blob);
+  return apiRequest<{ id: string }>(`/field-visits/${visitId}/evidence`, {
+    method: "POST",
+export async function uploadVisitEvidence(visitId: string, photo: OfflinePhoto) {
+  const body = new FormData();
+  body.append("file", photo.blob, photo.name);
+  const digest = await fileSha256(photo.blob);
+  return apiRequest<{ id: string }>(`/field-visits/${visitId}/evidence`, {
+    method: "POST",
+    headers: {
+      "x-captured-at": photo.capturedAt,
+      "x-evidence-id": photo.id,
+      "x-content-sha256": digest,
+    },
+    body,
+  });
+export function checkInFieldVisit(visit: ApiFieldVisit, fix: GeoFix, version = visit.version) {
+  return apiRequest<{ id: string; status: string; checkedInAt: string; version: number }>(
+    `/field-visits/${visit.id}/check-in`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        latitude: fix.lat,
+        longitude: fix.lng,
+        accuracyMeters: fix.accuracy,
+        capturedAt: fix.capturedAt,
+        version,
+      }),
+    },
+export function completeFieldVisit(
+  visit: ApiFieldVisit,
+  draft: FieldDraft,
+  version = visit.version,
+) {
+  if (!draft.checkOut) throw new Error("GPS check-out is required");
+  return apiRequest<{
+    id: string;
+    status: string;
+    insideFence: boolean;
+    distanceMeters: number;
+    allowedMeters: number;
+    version: number;
+===== src\lib\backend-api\tasks.ts =====
+import { apiRequest } from "./client";
+
+export interface VerificationTask {
+  id: string;
+  status: string;
+  instructions?: string | null;
+  dueAt?: string | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  blockerReason?: string | null;
+  blockedAt?: string | null;
+  version: number;
+  check: {
+export interface VerificationTask {
+  id: string;
+  status: string;
+  instructions?: string | null;
+  dueAt?: string | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  blockerReason?: string | null;
+  blockedAt?: string | null;
+  version: number;
+  check: {
+    publicId: string;
+    type: string;
+export interface FindingInput {
+  kind: "IDENTITY_MISMATCH" | "DATE_MISMATCH" | "ADDRESS_MISMATCH" | "RECORD_FOUND" | "OTHER";
+  severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  title: string;
+  description: string;
+  source?: string;
+}
+
+export interface VerifierInsights {
+  summary: {
+    active: number;
+    open: number;
+    inProgress: number;
+export interface VerifierInsights {
+  summary: {
+    active: number;
+    open: number;
+    inProgress: number;
+    blocked: number;
+    overdue: number;
+    dueToday: number;
+    dueNext24h: number;
+    completedToday: number;
+    completedThisWeek: number;
+    totalCompleted: number;
+    averageTurnaroundMinutes: number;
+export interface VerifierTaskContext {
+  publicId: string;
+  createdAt: string;
+  startedAt?: string | null;
+  blockedAt?: string | null;
+  completedAt?: string | null;
+  check: {
+    publicId: string;
+    type: string;
+    case: {
+      publicId: string;
+      caseNumber: string;
+      status: string;
+export function getMyTasks(
+  input: {
+    status?: string;
+    view?: "ACTIVE";
+    search?: string;
+    cursor?: string;
+    taskId?: string;
+    sla?: "OVERDUE" | "DUE_TODAY" | "DUE_SOON";
+    limit?: number;
+  } = {},
+) {
+  const params = new URLSearchParams();
+  Object.entries(input).forEach(([key, value]) => {
+export function getVerifierInsights() {
+  return apiRequest<VerifierInsights>("/tasks/mine/insights");
+}
+
+export function getVerifierTaskContext(taskId: string) {
+  return apiRequest<VerifierTaskContext>(`/tasks/${taskId}/context`);
+}
+
+export function updateTask(
+  taskId: string,
+  input: {
+    status: "IN_PROGRESS" | "COMPLETED" | "BLOCKED";
+    version: number;
+export function getVerifierTaskContext(taskId: string) {
+  return apiRequest<VerifierTaskContext>(`/tasks/${taskId}/context`);
+}
+
+export function updateTask(
+  taskId: string,
+  input: {
+    status: "IN_PROGRESS" | "COMPLETED" | "BLOCKED";
+    version: number;
+    result?: "CLEAR" | "DISCREPANCY" | "UNABLE_TO_VERIFY";
+    sourceSummary?: string;
+    findings: FindingInput[];
+  },
+export function updateTask(
+  taskId: string,
+  input: {
+    status: "IN_PROGRESS" | "COMPLETED" | "BLOCKED";
+    version: number;
+    result?: "CLEAR" | "DISCREPANCY" | "UNABLE_TO_VERIFY";
+    sourceSummary?: string;
+    findings: FindingInput[];
+  },
+) {
+  return apiRequest<{ id: string; status: string; version: number }>(`/tasks/${taskId}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+export function createTask(
+  checkId: string,
+  input: { assigneeId: string; instructions?: string; dueAt?: string },
+) {
+  return apiRequest<{ id: string; status: string; version: number }>(`/checks/${checkId}/tasks`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+===== src\lib\backend-api\reports.ts =====
+import { apiDownload, apiRequest, saveBlob } from "./client";
+
+export interface ReportSummary {
+  id: string;
+  status: string;
+  currentVersion: number;
+  workflowVersion?: number;
+  canDownload?: boolean;
+  releasedAt?: string | null;
+  downloadExpiresAt?: string | null;
+  publishedAt?: string | null;
+  createdAt: string;
+  versions: Array<{
+export interface ReportSummary {
+  id: string;
+  status: string;
+  currentVersion: number;
+  workflowVersion?: number;
+  canDownload?: boolean;
+  releasedAt?: string | null;
+  downloadExpiresAt?: string | null;
+  publishedAt?: string | null;
+  createdAt: string;
+  versions: Array<{
+    version: number;
+    sha256: string;
+export interface PublishedReportSummary {
+  id: string;
+  status: string;
+  currentVersion: number;
+  canDownload?: boolean;
+  downloadExpiresAt?: string | null;
+  publishedAt?: string | null;
+  case: {
+    id: string;
+    caseNumber: string;
+    completedAt?: string | null;
+    subject: { fullName: string };
+  };
+export function listPublishedReports(
+  input: {
+    search?: string;
+    cursor?: string;
+    limit?: number;
+  } = {},
+) {
+  const query = new URLSearchParams({ limit: String(input.limit ?? 20) });
+  if (input.search) query.set("search", input.search);
+  if (input.cursor) query.set("cursor", input.cursor);
+  return apiRequest<{ items: PublishedReportSummary[]; nextCursor: string | null }>(
+    `/reports?${query.toString()}`,
+  );
+export function listReports(caseId: string) {
+  return apiRequest<{ items: ReportSummary[] }>(`/cases/${caseId}/reports`);
+}
+
+export function generateReport(caseId: string) {
+  return apiRequest<{
+    id: string;
+    status: string;
+    version: number;
+    authenticityCode: string;
+    generatedAt: string;
+  }>(`/cases/${caseId}/reports/generate`, { method: "POST" });
+}
+export function generateReport(caseId: string) {
+  return apiRequest<{
+    id: string;
+    status: string;
+    version: number;
+    authenticityCode: string;
+    generatedAt: string;
+  }>(`/cases/${caseId}/reports/generate`, { method: "POST" });
+}
+
+export function retryReport(caseId: string, reportId: string) {
+  return apiRequest<{ id: string; status: string }>(`/cases/${caseId}/reports/${reportId}/retry`, {
+    method: "POST",
+export function retryReport(caseId: string, reportId: string) {
+  return apiRequest<{ id: string; status: string }>(`/cases/${caseId}/reports/${reportId}/retry`, {
+    method: "POST",
+  });
+}
+
+export async function downloadReport(reportId: string, caseNumber: string) {
+  const blob = await apiDownload(`/reports/${reportId}/content`);
+  saveBlob(blob, `Sapling-Global-${caseNumber}.pdf`);
+}
+
+export function verifyReport(authenticityCode: string) {
+  return apiRequest<{
+export async function downloadReport(reportId: string, caseNumber: string) {
+  const blob = await apiDownload(`/reports/${reportId}/content`);
+  saveBlob(blob, `Sapling-Global-${caseNumber}.pdf`);
+}
+
+export function verifyReport(authenticityCode: string) {
+  return apiRequest<{
+    valid: boolean;
+    caseNumber: string;
+    reportVersion: number;
+    sha256: string;
+    generatedAt: string;
+    completedAt?: string | null;
+export function verifyReport(authenticityCode: string) {
+  return apiRequest<{
+    valid: boolean;
+    caseNumber: string;
+    reportVersion: number;
+    sha256: string;
+    generatedAt: string;
+    completedAt?: string | null;
+  }>(`/public/reports/verify/${encodeURIComponent(authenticityCode)}`);
+}
+===== src\lib\backend-api\documents.ts =====
+import { apiDownload, apiRequest, saveBlob } from "./client";
+import { fileSha256 } from "./file-digest";
+import { openDocumentPreview } from "./document-preview";
+
+export const documentTypes = [
+  "AADHAAR",
+  "PAN",
+  "PASSPORT",
+  "DRIVING_LICENCE",
+  "ADDRESS_PROOF",
+  "EDUCATION_CERTIFICATE",
+  "EMPLOYMENT_PROOF",
+  "OTHER",
+import { fileSha256 } from "./file-digest";
+import { openDocumentPreview } from "./document-preview";
+
+export const documentTypes = [
+  "AADHAAR",
+  "PAN",
+  "PASSPORT",
+  "DRIVING_LICENCE",
+  "ADDRESS_PROOF",
+  "EDUCATION_CERTIFICATE",
+  "EMPLOYMENT_PROOF",
+  "OTHER",
+] as const;
+import { openDocumentPreview } from "./document-preview";
+
+export const documentTypes = [
+  "AADHAAR",
+  "PAN",
+  "PASSPORT",
+  "DRIVING_LICENCE",
+  "ADDRESS_PROOF",
+  "EDUCATION_CERTIFICATE",
+  "EMPLOYMENT_PROOF",
+  "OTHER",
+] as const;
+
+export const documentTypes = [
+  "AADHAAR",
+  "PAN",
+  "PASSPORT",
+  "DRIVING_LICENCE",
+  "ADDRESS_PROOF",
+  "EDUCATION_CERTIFICATE",
+  "EMPLOYMENT_PROOF",
+  "OTHER",
+] as const;
+
+export type DocumentType = (typeof documentTypes)[number];
+
+export type DocumentType = (typeof documentTypes)[number];
+
+export function createDocument(caseId: string, type: DocumentType) {
+  return apiRequest<{ id: string; type: string; status: string; currentVersion: number }>(
+    `/cases/${caseId}/documents`,
+    { method: "POST", body: JSON.stringify({ type }) },
+  );
+}
+
+export async function uploadDocument(documentId: string, file: File) {
+  const body = new FormData();
+  body.append("file", file, file.name);
+  const digest = await fileSha256(file);
+export function createDocument(caseId: string, type: DocumentType) {
+  return apiRequest<{ id: string; type: string; status: string; currentVersion: number }>(
+    `/cases/${caseId}/documents`,
+    { method: "POST", body: JSON.stringify({ type }) },
+  );
+}
+
+export async function uploadDocument(documentId: string, file: File) {
+  const body = new FormData();
+  body.append("file", file, file.name);
+  const digest = await fileSha256(file);
+  return apiRequest<{ version: number; sha256: string; malwareState: string }>(
+    `/documents/${documentId}/content`,
+export async function uploadDocument(documentId: string, file: File) {
+  const body = new FormData();
+  body.append("file", file, file.name);
+  const digest = await fileSha256(file);
+  return apiRequest<{ version: number; sha256: string; malwareState: string }>(
+    `/documents/${documentId}/content`,
+    { method: "POST", headers: { "x-content-sha256": digest }, body },
+  );
+}
+
+export async function downloadDocument(documentId: string, filename: string) {
+  const blob = await apiDownload(`/documents/${documentId}/content`);
+  saveBlob(blob, filename);
+export async function downloadDocument(documentId: string, filename: string) {
+  const blob = await apiDownload(`/documents/${documentId}/content`);
+  saveBlob(blob, filename);
+}
+
+export function previewDocument(documentId: string) {
+  return openDocumentPreview(() => apiDownload(`/documents/${documentId}/preview`));
+}
+
+export function reviewDocument(
+  documentId: string,
+  input: {
+    version: number;
+export function previewDocument(documentId: string) {
+  return openDocumentPreview(() => apiDownload(`/documents/${documentId}/preview`));
+}
+
+export function reviewDocument(
+  documentId: string,
+  input: {
+    version: number;
+    documentVersion: number;
+    decision: "VERIFIED" | "REJECTED" | "REUPLOAD_REQUIRED";
+    note: string;
+    expiresAt?: string;
+  },
+export function reviewDocument(
+  documentId: string,
+  input: {
+    version: number;
+    documentVersion: number;
+    decision: "VERIFIED" | "REJECTED" | "REUPLOAD_REQUIRED";
+    note: string;
+    expiresAt?: string;
+  },
+) {
+  return apiRequest(`/documents/${documentId}/review`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+export function getEvidenceReadiness(caseId: string) {
+  return apiRequest<{ ready: boolean; issues: string[]; requiredTypes: string[] }>(
+    `/cases/${caseId}/evidence-readiness`,
+  );
+}
+===== src\lib\backend-api\finance.ts =====
+import { apiDownload, apiRequest, saveBlob } from "./client";
+
+export interface FinanceOverview {
+  summary: {
+    invoiceCount: number;
+    openInvoiceCount: number;
+    billed: number;
+    collected: number;
+    credited: number;
+    outstanding: number;
+    overdueAmount: number;
+    overdueCount: number;
+  };
+export interface FinanceOverview {
+  summary: {
+    invoiceCount: number;
+    openInvoiceCount: number;
+    billed: number;
+    collected: number;
+    credited: number;
+    outstanding: number;
+    overdueAmount: number;
+    overdueCount: number;
+  };
+  ageing: Array<{ label: string; value: number }>;
+  generatedAt: string;
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  status: string;
+  currency: string;
+  issuedAt?: string | null;
+  dueAt?: string | null;
+  subtotal: string | number;
+  taxAmount: string | number;
+  totalAmount: string | number;
+  paidAmount: string | number;
+  creditedAmount: string | number;
+  notes?: string | null;
+export function getFinanceOverview() {
+  return apiRequest<FinanceOverview>("/finance/overview");
+}
+export function listInvoices(
+  input: { status?: string; search?: string; cursor?: string; limit?: number } = {},
+) {
+  const query = new URLSearchParams();
+  if (input.status) query.set("status", input.status);
+  if (input.search) query.set("search", input.search);
+  if (input.cursor) query.set("cursor", input.cursor);
+  query.set("limit", String(input.limit ?? 25));
+  return apiRequest<{ items: Invoice[]; nextCursor: string | null }>(
+    `/finance/invoices?${query.toString()}`,
+export function listInvoices(
+  input: { status?: string; search?: string; cursor?: string; limit?: number } = {},
+) {
+  const query = new URLSearchParams();
+  if (input.status) query.set("status", input.status);
+  if (input.search) query.set("search", input.search);
+  if (input.cursor) query.set("cursor", input.cursor);
+  query.set("limit", String(input.limit ?? 25));
+  return apiRequest<{ items: Invoice[]; nextCursor: string | null }>(
+    `/finance/invoices?${query.toString()}`,
+  );
+}
+
+export function cancelInvoice(invoiceId: string, input: { version: number; reason: string }) {
+  return apiRequest<{ id: string; status: "CANCELLED"; version: number }>(
+    `/finance/invoices/${invoiceId}/cancel`,
+    { method: "PATCH", body: JSON.stringify(input) },
+  );
+}
+export function createInvoice(input: {
+  clientId: string;
+  dueAt: string;
+  notes?: string;
+  lines: Array<{
+    caseId?: string;
+    reportId?: string;
+export function createInvoice(input: {
+  clientId: string;
+  dueAt: string;
+  notes?: string;
+  lines: Array<{
+    caseId?: string;
+    reportId?: string;
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    taxRate: number;
+  }>;
+}) {
+export function recordPayment(
+  invoiceId: string,
+  input: {
+    amount: number;
+    method: string;
+    reference?: string;
+    receivedAt: string;
+    version: number;
+  },
+) {
+  return apiRequest<{
+    id: string;
+    invoiceStatus: string;
+export function createCreditNote(
+  invoiceId: string,
+  input: { amount: number; reason: string; version: number },
+) {
+  return apiRequest<{
+    id: string;
+    noteNumber: string;
+    amount: string | number;
+    reason: string;
+    createdAt: string;
+    invoiceStatus: string;
+    invoiceVersion: number;
+    creditedAmount: number;
+export async function exportFinanceLedger(input: { search?: string; status?: string } = {}) {
+  const query = new URLSearchParams();
+  if (input.search) query.set("search", input.search);
+  if (input.status) query.set("status", input.status);
+  const blob = await apiDownload(`/finance/invoices/export?${query.toString()}`);
+  saveBlob(blob, `sapling-global-ledger-${new Date().toISOString().slice(0, 10)}.csv`);
+}
+
+export async function downloadInvoice(invoiceId: string, invoiceNumber: string) {
+  const blob = await apiDownload(`/finance/invoices/${invoiceId}/pdf`);
+  saveBlob(blob, `Sapling-Global-${invoiceNumber}.pdf`);
+}
+export async function downloadInvoice(invoiceId: string, invoiceNumber: string) {
+  const blob = await apiDownload(`/finance/invoices/${invoiceId}/pdf`);
+  saveBlob(blob, `Sapling-Global-${invoiceNumber}.pdf`);
+}
+===== src\lib\backend-api\billing-ready.ts =====
+import { apiRequest } from "./client";
+export interface BillingReadyReport {
+  reportId: string;
+  reportVersion: number;
+  preparedAt: string;
+  caseId: string;
+  caseNumber: string;
+  candidateName: string;
+  client: { id: string; displayName: string };
+  lines: Array<{
+    caseId: string;
+    reportId: string;
+    description: string;
+export interface BillingReadyReport {
+  reportId: string;
+  reportVersion: number;
+  preparedAt: string;
+  caseId: string;
+  caseNumber: string;
+  candidateName: string;
+  client: { id: string; displayName: string };
+  lines: Array<{
+    caseId: string;
+    reportId: string;
+    description: string;
+    quantity: number;
+export function listBillingReady(cursor?: string) {
+  const query = new URLSearchParams({ limit: "10" });
+  if (cursor) query.set("cursor", cursor);
+  return apiRequest<{ items: BillingReadyReport[]; nextCursor: string | null }>(
+    `/finance/billing-ready?${query}`,
+  );
+}
+===== src\lib\backend-api\client-finance.ts =====
+import { apiDownload, apiRequest, saveBlob } from "./client";
+import type { FinanceOverview } from "./finance";
+
+export interface ClientInvoice {
+  id: string;
+  invoiceNumber: string;
+  status: string;
+  currency: string;
+  totalAmount: number | string;
+  paidAmount: number | string;
+  creditedAmount: number | string;
+  balance: number;
+  issuedAt: string | null;
+import type { FinanceOverview } from "./finance";
+
+export interface ClientInvoice {
+  id: string;
+  invoiceNumber: string;
+  status: string;
+  currency: string;
+  totalAmount: number | string;
+  paidAmount: number | string;
+  creditedAmount: number | string;
+  balance: number;
+  issuedAt: string | null;
+  dueAt: string | null;
+export interface ClientInvoice {
+  id: string;
+  invoiceNumber: string;
+  status: string;
+  currency: string;
+  totalAmount: number | string;
+  paidAmount: number | string;
+  creditedAmount: number | string;
+  balance: number;
+  issuedAt: string | null;
+  dueAt: string | null;
+}
+export const getClientFinanceOverview = () =>
+export const getClientFinanceOverview = () =>
+  apiRequest<FinanceOverview>("/client-finance/overview");
+export function listClientInvoices(input: { search: string; status: string; cursor?: string }) {
+  const query = new URLSearchParams({ limit: "20" });
+  if (input.search) query.set("search", input.search);
+  if (input.status) query.set("status", input.status);
+  if (input.cursor) query.set("cursor", input.cursor);
+  return apiRequest<{ items: ClientInvoice[]; nextCursor: string | null }>(
+    `/client-finance/invoices?${query}`,
+  );
+}
+export async function downloadClientInvoice(invoice: ClientInvoice) {
+  const blob = await apiDownload(`/client-finance/invoices/${invoice.id}/pdf`);
+export function listClientInvoices(input: { search: string; status: string; cursor?: string }) {
+  const query = new URLSearchParams({ limit: "20" });
+  if (input.search) query.set("search", input.search);
+  if (input.status) query.set("status", input.status);
+  if (input.cursor) query.set("cursor", input.cursor);
+  return apiRequest<{ items: ClientInvoice[]; nextCursor: string | null }>(
+    `/client-finance/invoices?${query}`,
+  );
+}
+export async function downloadClientInvoice(invoice: ClientInvoice) {
+  const blob = await apiDownload(`/client-finance/invoices/${invoice.id}/pdf`);
+  saveBlob(blob, `Sapling-${invoice.invoiceNumber}.pdf`);
+}
+export async function downloadClientInvoice(invoice: ClientInvoice) {
+  const blob = await apiDownload(`/client-finance/invoices/${invoice.id}/pdf`);
+  saveBlob(blob, `Sapling-${invoice.invoiceNumber}.pdf`);
+}
+===== src\lib\backend-api\client-commercial.ts =====
+import { apiRequest } from "./client";
+
+export interface ClientRate {
+  servicePackageId: string;
+  name?: string;
+  unitPrice: number;
+  taxRate: number;
+  tatHours: number | null;
+  active: boolean;
+}
+export interface AgreementDraft {
+  type: "AGREEMENT" | "DPA" | "CONFIDENTIALITY" | "PROPOSAL";
+  reference: string;
+export interface ClientRate {
+  servicePackageId: string;
+  name?: string;
+  unitPrice: number;
+  taxRate: number;
+  tatHours: number | null;
+  active: boolean;
+}
+export interface AgreementDraft {
+  type: "AGREEMENT" | "DPA" | "CONFIDENTIALITY" | "PROPOSAL";
+  reference: string;
+  signedAt?: string;
+  expiresAt?: string;
+export interface AgreementDraft {
+  type: "AGREEMENT" | "DPA" | "CONFIDENTIALITY" | "PROPOSAL";
+  reference: string;
+  signedAt?: string;
+  expiresAt?: string;
+}
+export interface CommercialSettings {
+  id: string;
+  version: number;
+  gstin: string | null;
+  billingTerms: string | null;
+  billingAddress: string | null;
+  packages: ClientRate[];
+export interface CommercialSettings {
+  id: string;
+  version: number;
+  gstin: string | null;
+  billingTerms: string | null;
+  billingAddress: string | null;
+  packages: ClientRate[];
+  agreements: Array<AgreementDraft & { id: string }>;
+  catalog: Array<{ id: string; name: string; price: number | null; tatHours: number }>;
+}
+export const getClientCommercial = (clientId: string) =>
+  apiRequest<CommercialSettings>(`/clients/${clientId}/commercial`);
+export function updateClientCommercial(
+export const getClientCommercial = (clientId: string) =>
+  apiRequest<CommercialSettings>(`/clients/${clientId}/commercial`);
+export function updateClientCommercial(
+  clientId: string,
+  input: {
+    version: number;
+    gstin: string;
+    billingTerms: string;
+    billingAddress: string;
+    packages: Array<Omit<ClientRate, "name" | "tatHours"> & { tatHours?: number }>;
+    agreements: AgreementDraft[];
+  },
+) {
+export function updateClientCommercial(
+  clientId: string,
+  input: {
+    version: number;
+    gstin: string;
+    billingTerms: string;
+    billingAddress: string;
+    packages: Array<Omit<ClientRate, "name" | "tatHours"> & { tatHours?: number }>;
+    agreements: AgreementDraft[];
+  },
+) {
+  return apiRequest<CommercialSettings>(`/clients/${clientId}/commercial`, {
+    method: "PUT",
+===== src\lib\backend-api\crm.ts =====
+import { apiRequest } from "./client";
+import { toIndianMobileE164 } from "@/lib/indian-mobile";
+
+export const opportunityStages = [
+  "NEW",
+  "QUALIFIED",
+  "PROPOSAL",
+  "NEGOTIATION",
+  "WON",
+  "LOST",
+] as const;
+export type OpportunityStage = (typeof opportunityStages)[number];
+
+import { toIndianMobileE164 } from "@/lib/indian-mobile";
+
+export const opportunityStages = [
+  "NEW",
+  "QUALIFIED",
+  "PROPOSAL",
+  "NEGOTIATION",
+  "WON",
+  "LOST",
+] as const;
+export type OpportunityStage = (typeof opportunityStages)[number];
+
+export type CrmLeadSource =
+export const opportunityStages = [
+  "NEW",
+  "QUALIFIED",
+  "PROPOSAL",
+  "NEGOTIATION",
+  "WON",
+  "LOST",
+] as const;
+export type OpportunityStage = (typeof opportunityStages)[number];
+
+export type CrmLeadSource =
+  "INBOUND" | "OUTBOUND" | "REFERRAL" | "EVENT" | "PARTNER" | "MARKETPLACE";
+
+export type OpportunityStage = (typeof opportunityStages)[number];
+
+export type CrmLeadSource =
+  "INBOUND" | "OUTBOUND" | "REFERRAL" | "EVENT" | "PARTNER" | "MARKETPLACE";
+
+export interface CrmSettingsResponse {
+  id: string | null;
+  stageProbabilities: Record<OpportunityStage, number>;
+  leadSources: CrmLeadSource[];
+  version: number;
+  updatedAt: string | null;
+  canEdit: boolean;
+}
+export type CrmLeadSource =
+  "INBOUND" | "OUTBOUND" | "REFERRAL" | "EVENT" | "PARTNER" | "MARKETPLACE";
+
+export interface CrmSettingsResponse {
+  id: string | null;
+  stageProbabilities: Record<OpportunityStage, number>;
+  leadSources: CrmLeadSource[];
+  version: number;
+  updatedAt: string | null;
+  canEdit: boolean;
+}
+
+export interface Opportunity {
+export interface CrmSettingsResponse {
+  id: string | null;
+  stageProbabilities: Record<OpportunityStage, number>;
+  leadSources: CrmLeadSource[];
+  version: number;
+  updatedAt: string | null;
+  canEdit: boolean;
+}
+
+export interface Opportunity {
+  id: string;
+  companyName: string;
+  city?: string | null;
+export interface Opportunity {
+  id: string;
+  companyName: string;
+  city?: string | null;
+  industry?: string | null;
+  contactName: string;
+  contactTitle?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  stage: OpportunityStage;
+  source?: string | null;
+  estimatedValue: string | number;
+  probability: number;
+export interface SalesActivity {
+  id: string;
+  type: string;
+  summary: string;
+  occurredAt: string;
+  actor: { displayName: string };
+}
+
+export interface SalesActivityListItem extends SalesActivity {
+  opportunity: { id: string; companyName: string; contactName: string };
+}
+
+export type OpportunityDetail = Opportunity & { activities: SalesActivity[] };
+export interface SalesActivityListItem extends SalesActivity {
+  opportunity: { id: string; companyName: string; contactName: string };
+}
+
+export type OpportunityDetail = Opportunity & { activities: SalesActivity[] };
+
+export interface SalesOwner {
+  id: string;
+  displayName: string;
+  email: string;
+  branch?: { name: string } | null;
+  activeOpportunities: number;
+  pipelineValue: number;
+export type OpportunityDetail = Opportunity & { activities: SalesActivity[] };
+
+export interface SalesOwner {
+  id: string;
+  displayName: string;
+  email: string;
+  branch?: { name: string } | null;
+  activeOpportunities: number;
+  pipelineValue: number;
+  weightedForecast: number;
+  wonRevenue: number;
+  winRate: number;
+  overdueFollowUps: number;
+export interface SalesOwner {
+  id: string;
+  displayName: string;
+  email: string;
+  branch?: { name: string } | null;
+  activeOpportunities: number;
+  pipelineValue: number;
+  weightedForecast: number;
+  wonRevenue: number;
+  winRate: number;
+  overdueFollowUps: number;
+  activitiesThisWeek: number;
+  closingThisMonth: number;
+export interface CrmOverview {
+  summary: {
+    openCount: number;
+    openValue: number;
+    weightedValue: number;
+    wonValue: number;
+    activeOwners: number;
+    wonCount: number;
+    lostCount: number;
+    winRate: number;
+    pendingFollowUps: number;
+    overdueFollowUps: number;
+    unassignedOpportunities: number;
+export function getCrmOverview() {
+  return apiRequest<CrmOverview>("/crm/overview");
+}
+export function listOpportunities(input: OpportunityListInput = {}) {
+  const query = new URLSearchParams();
+  Object.entries(input).forEach(([key, value]) => {
+    if (value !== undefined && key !== "limit") query.set(key, String(value));
+  });
+  query.set("limit", String(input.limit ?? 25));
+  return apiRequest<OpportunityListResponse>(`/crm/opportunities?${query.toString()}`);
+}
+
+export function getOpportunity(id: string) {
+export function listOpportunities(input: OpportunityListInput = {}) {
+  const query = new URLSearchParams();
+  Object.entries(input).forEach(([key, value]) => {
+    if (value !== undefined && key !== "limit") query.set(key, String(value));
+  });
+  query.set("limit", String(input.limit ?? 25));
+  return apiRequest<OpportunityListResponse>(`/crm/opportunities?${query.toString()}`);
+}
+
+export function getOpportunity(id: string) {
+  return apiRequest<OpportunityDetail>(`/crm/opportunities/${id}`);
+}
+
+export function getOpportunity(id: string) {
+  return apiRequest<OpportunityDetail>(`/crm/opportunities/${id}`);
+}
+
+export function listSalesOwners() {
+  return apiRequest<{ items: SalesOwner[] }>("/crm/owners");
+}
+
+export function getCrmSettings() {
+  return apiRequest<CrmSettingsResponse>("/crm/settings");
+}
+
+export function updateCrmSettings(input: {
+export function listSalesOwners() {
+  return apiRequest<{ items: SalesOwner[] }>("/crm/owners");
+}
+
+export function getCrmSettings() {
+  return apiRequest<CrmSettingsResponse>("/crm/settings");
+}
+
+export function updateCrmSettings(input: {
+  version: number;
+  stageProbabilities: Record<OpportunityStage, number>;
+  leadSources: CrmLeadSource[];
+}) {
+export function getCrmSettings() {
+  return apiRequest<CrmSettingsResponse>("/crm/settings");
+}
+
+export function updateCrmSettings(input: {
+  version: number;
+  stageProbabilities: Record<OpportunityStage, number>;
+  leadSources: CrmLeadSource[];
+}) {
+  return apiRequest<CrmSettingsResponse>("/crm/settings", {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+export function updateCrmSettings(input: {
+  version: number;
+  stageProbabilities: Record<OpportunityStage, number>;
+  leadSources: CrmLeadSource[];
+}) {
+  return apiRequest<CrmSettingsResponse>("/crm/settings", {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
+export function listSalesActivities(input: {
+  search?: string;
+export function listSalesActivities(input: {
+  search?: string;
+  type?: string;
+  owner?: string;
+  page?: number;
+  limit?: number;
+}) {
+  const query = new URLSearchParams();
+  Object.entries(input).forEach(([key, value]) => {
+    if (value !== undefined) query.set(key, String(value));
+  });
+  return apiRequest<{
+    items: SalesActivityListItem[];
+export function createOpportunity(input: {
+  companyName: string;
+  city?: string;
+  industry?: string;
+  contactName: string;
+  contactTitle?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  ownerId?: string;
+  source?: string;
+  estimatedValue: number;
+  probability: number;
+  expectedCloseDate: string;
+export function updateOpportunity(
+  id: string,
+  input: {
+    version: number;
+    stage?: OpportunityStage;
+    probability?: number;
+    ownerId?: string | null;
+    estimatedValue?: number;
+    expectedCloseDate?: string;
+    nextFollowUpAt?: string;
+    notes?: string | null;
+    lostReason?: string;
+    companyName?: string;
+export function addSalesActivity(
+  id: string,
+  input: {
+    type: "CALL" | "EMAIL" | "MEETING" | "NOTE" | "FOLLOW_UP";
+    summary: string;
+    occurredAt?: string;
+    nextFollowUpAt?: string;
+  },
+) {
+  return apiRequest<SalesActivity>(`/crm/opportunities/${id}/activities`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+export function completeSalesFollowUp(id: string, input: { version: number; notes?: string }) {
+  return apiRequest<{
+    opportunityId: string;
+    completedAt: string;
+    version: number;
+  }>(`/crm/opportunities/${id}/follow-up/complete`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function prepareSalesOnboarding(id: string, version: number) {
+  return apiRequest<{ opportunityId: string; preparedAt: string; version: number }>(
+export function prepareSalesOnboarding(id: string, version: number) {
+  return apiRequest<{ opportunityId: string; preparedAt: string; version: number }>(
+    `/crm/opportunities/${id}/onboarding-handoff`,
+    { method: "POST", body: JSON.stringify({ version }) },
+  );
+}
+
+interface OpportunityListInput {
+  stage?: string;
+  search?: string;
+  cursor?: string;
+  limit?: number;
+  page?: number;
+===== src\lib\backend-api\crm-proposals.ts =====
+import { apiDownload, apiRequest, saveBlob } from "./client";
+export interface ProposalLine {
+  packageId: string;
+  quantity: number;
+  unitPrice: number;
+  taxRate: number;
+}
+export interface Proposal {
+  id: string;
+  revision: number;
+  version: number;
+  status: string;
+  validUntil: string;
+export interface ProposalLine {
+  packageId: string;
+  quantity: number;
+  unitPrice: number;
+  taxRate: number;
+}
+export interface Proposal {
+  id: string;
+  revision: number;
+  version: number;
+  status: string;
+  validUntil: string;
+  isAuthor: boolean;
+export interface Proposal {
+  id: string;
+  revision: number;
+  version: number;
+  status: string;
+  validUntil: string;
+  isAuthor: boolean;
+  approvedAt: string | null;
+  snapshot: {
+    company: string;
+    preparedBy: string;
+    preparedAt: string;
+    terms: string;
+export interface ProposalCatalog {
+  id: string;
+  name: string;
+  price: number | null;
+  tatHours: number;
+  serviceFamily: string;
+}
+export function listProposals(id: string) {
+  return apiRequest<{
+    items: Proposal[];
+    catalog: ProposalCatalog[];
+    opportunityVersion: number;
+    stage: string;
+export function listProposals(id: string) {
+  return apiRequest<{
+    items: Proposal[];
+    catalog: ProposalCatalog[];
+    opportunityVersion: number;
+    stage: string;
+  }>(`/crm/opportunities/${id}/proposals`);
+}
+export function createProposal(
+  id: string,
+  input: { opportunityVersion: number; validUntil: string; terms: string; lines: ProposalLine[] },
+) {
+  return apiRequest(`/crm/opportunities/${id}/proposals`, {
+export function createProposal(
+  id: string,
+  input: { opportunityVersion: number; validUntil: string; terms: string; lines: ProposalLine[] },
+) {
+  return apiRequest(`/crm/opportunities/${id}/proposals`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+export function decideProposal(
+  id: string,
+  proposal: string,
+  input: { version: number; status: string; evidence: string },
+export function decideProposal(
+  id: string,
+  proposal: string,
+  input: { version: number; status: string; evidence: string },
+) {
+  return apiRequest(`/crm/opportunities/${id}/proposals/${proposal}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+export async function downloadProposal(id: string, proposal: Proposal) {
+  saveBlob(
+    await apiDownload(`/crm/opportunities/${id}/proposals/${proposal.id}/pdf`),
+export async function downloadProposal(id: string, proposal: Proposal) {
+  saveBlob(
+    await apiDownload(`/crm/opportunities/${id}/proposals/${proposal.id}/pdf`),
+    `proposal-r${proposal.revision}.pdf`,
+  );
+}
+export interface CrmSequence {
+  version: number;
+  stage: string;
+  hasOwner: boolean;
+  nextFollowUpAt: string | null;
+  followUpSequenceStep: number | null;
+  followUpSequenceStartedAt: string | null;
+export interface CrmSequence {
+  version: number;
+  stage: string;
+  hasOwner: boolean;
+  nextFollowUpAt: string | null;
+  followUpSequenceStep: number | null;
+  followUpSequenceStartedAt: string | null;
+}
+export function getCrmSequence(id: string) {
+  return apiRequest<CrmSequence>(`/crm/opportunities/${id}/follow-up-sequence`);
+}
+export function setCrmSequence(id: string, version: number, enabled: boolean) {
+  return apiRequest(`/crm/opportunities/${id}/follow-up-sequence`, {
+export function getCrmSequence(id: string) {
+  return apiRequest<CrmSequence>(`/crm/opportunities/${id}/follow-up-sequence`);
+}
+export function setCrmSequence(id: string, version: number, enabled: boolean) {
+  return apiRequest(`/crm/opportunities/${id}/follow-up-sequence`, {
+    method: "POST",
+    body: JSON.stringify({ version, enabled }),
+  });
+}
+export function setCrmSequence(id: string, version: number, enabled: boolean) {
+  return apiRequest(`/crm/opportunities/${id}/follow-up-sequence`, {
+    method: "POST",
+    body: JSON.stringify({ version, enabled }),
+  });
+}
+===== src\lib\backend-api\privacy.ts =====
+import { apiRequest } from "./client";
+
+export type PrivacyKind = "DATA_REQUEST" | "INCIDENT";
+export interface PrivacyRecord {
+  id: string;
+  kind: PrivacyKind;
+  title: string;
+  description: string;
+  subjectReference: string | null;
+  requestType: string | null;
+  severity: string | null;
+  status: string;
+  dueAt: string | null;
+export type PrivacyKind = "DATA_REQUEST" | "INCIDENT";
+export interface PrivacyRecord {
+  id: string;
+  kind: PrivacyKind;
+  title: string;
+  description: string;
+  subjectReference: string | null;
+  requestType: string | null;
+  severity: string | null;
+  status: string;
+  dueAt: string | null;
+  resolutionNote: string | null;
+  evidenceReference: string | null;
+export interface PrivacyRecord {
+  id: string;
+  kind: PrivacyKind;
+  title: string;
+  description: string;
+  subjectReference: string | null;
+  requestType: string | null;
+  severity: string | null;
+  status: string;
+  dueAt: string | null;
+  resolutionNote: string | null;
+  evidenceReference: string | null;
+  completedAt: string | null;
+export interface PrivacyQuery {
+  kind?: PrivacyKind;
+  status?: string;
+  search?: string;
+  page: number;
+  pageSize: number;
+}
+export interface PrivacyPage<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  pageCount: number;
+export interface PrivacyPage<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  pageCount: number;
+}
+export interface PrivacyCreate {
+  kind: PrivacyKind;
+  title: string;
+  description: string;
+  subjectReference?: string;
+  requestType?: string;
+export interface PrivacyCreate {
+  kind: PrivacyKind;
+  title: string;
+  description: string;
+  subjectReference?: string;
+  requestType?: string;
+  severity?: string;
+  dueAt?: string;
+}
+export interface PrivacyEvent {
+  id: string;
+  action: string;
+  createdAt: string;
+export interface PrivacyEvent {
+  id: string;
+  action: string;
+  createdAt: string;
+  actor: { publicId: string; displayName: string } | null;
+  before: { status?: string } | null;
+  after: {
+    status?: string;
+    note?: string;
+    description?: string;
+    evidenceReference?: string;
+  } | null;
+}
+export const privacyNotice =
+  "Human review and decision tracking only. No automatic deletion, consent withdrawal or regulatory notification happens here.";
+export const privacyStatus = {
+  DATA_REQUEST: ["RECEIVED", "IN_REVIEW", "APPROVED", "REJECTED", "FULFILLED"],
+  INCIDENT: ["OPEN", "INVESTIGATING", "CONTAINED", "CLOSED"],
+};
+export const privacyNext: Record<string, string[]> = {
+  RECEIVED: ["IN_REVIEW"],
+  IN_REVIEW: ["APPROVED", "REJECTED"],
+  APPROVED: ["FULFILLED"],
+  OPEN: ["INVESTIGATING"],
+  INVESTIGATING: ["CONTAINED"],
+  CONTAINED: ["INVESTIGATING", "CLOSED"],
+export const privacyStatus = {
+  DATA_REQUEST: ["RECEIVED", "IN_REVIEW", "APPROVED", "REJECTED", "FULFILLED"],
+  INCIDENT: ["OPEN", "INVESTIGATING", "CONTAINED", "CLOSED"],
+};
+export const privacyNext: Record<string, string[]> = {
+  RECEIVED: ["IN_REVIEW"],
+  IN_REVIEW: ["APPROVED", "REJECTED"],
+  APPROVED: ["FULFILLED"],
+  OPEN: ["INVESTIGATING"],
+  INVESTIGATING: ["CONTAINED"],
+  CONTAINED: ["INVESTIGATING", "CLOSED"],
+};
+export const privacyLabel = (value: string) =>
+export const privacyNext: Record<string, string[]> = {
+  RECEIVED: ["IN_REVIEW"],
+  IN_REVIEW: ["APPROVED", "REJECTED"],
+  APPROVED: ["FULFILLED"],
+  OPEN: ["INVESTIGATING"],
+  INVESTIGATING: ["CONTAINED"],
+  CONTAINED: ["INVESTIGATING", "CLOSED"],
+};
+export const privacyLabel = (value: string) =>
+  value
+    .toLowerCase()
+    .replaceAll("_", " ")
+    .replace(/^./, (letter) => letter.toUpperCase());
+export const privacyLabel = (value: string) =>
+  value
+    .toLowerCase()
+    .replaceAll("_", " ")
+    .replace(/^./, (letter) => letter.toUpperCase());
+export function listPrivacyRecords(query: PrivacyQuery) {
+  const params = new URLSearchParams({
+    page: String(query.page),
+    pageSize: String(query.pageSize),
+  });
+  if (query.kind) params.set("kind", query.kind);
+  if (query.status) params.set("status", query.status);
+  if (query.search?.trim()) params.set("search", query.search.trim());
+export function listPrivacyRecords(query: PrivacyQuery) {
+  const params = new URLSearchParams({
+    page: String(query.page),
+    pageSize: String(query.pageSize),
+  });
+  if (query.kind) params.set("kind", query.kind);
+  if (query.status) params.set("status", query.status);
+  if (query.search?.trim()) params.set("search", query.search.trim());
+  return apiRequest<PrivacyPage<PrivacyRecord>>(`/privacy-records?${params}`);
+}
+export const getPrivacyRecord = (id: string) => apiRequest<PrivacyRecord>(`/privacy-records/${id}`);
+export const getPrivacyEvents = (id: string, page: number) =>
+  apiRequest<PrivacyPage<PrivacyEvent>>(`/privacy-records/${id}/events?page=${page}&pageSize=8`);
+export const getPrivacyRecord = (id: string) => apiRequest<PrivacyRecord>(`/privacy-records/${id}`);
+export const getPrivacyEvents = (id: string, page: number) =>
+  apiRequest<PrivacyPage<PrivacyEvent>>(`/privacy-records/${id}/events?page=${page}&pageSize=8`);
+export const createPrivacyRecord = (input: PrivacyCreate) =>
+  apiRequest<{ id: string }>("/privacy-records", { method: "POST", body: JSON.stringify(input) });
+export const updatePrivacyRecord = (
+  id: string,
+  input: { version: number; status: string; note: string; evidenceReference?: string },
+) =>
+  apiRequest<{ id: string; version: number }>(`/privacy-records/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+export const getPrivacyEvents = (id: string, page: number) =>
+  apiRequest<PrivacyPage<PrivacyEvent>>(`/privacy-records/${id}/events?page=${page}&pageSize=8`);
+export const createPrivacyRecord = (input: PrivacyCreate) =>
+  apiRequest<{ id: string }>("/privacy-records", { method: "POST", body: JSON.stringify(input) });
+export const updatePrivacyRecord = (
+  id: string,
+  input: { version: number; status: string; note: string; evidenceReference?: string },
+) =>
+  apiRequest<{ id: string; version: number }>(`/privacy-records/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+export const createPrivacyRecord = (input: PrivacyCreate) =>
+  apiRequest<{ id: string }>("/privacy-records", { method: "POST", body: JSON.stringify(input) });
+export const updatePrivacyRecord = (
+  id: string,
+  input: { version: number; status: string; note: string; evidenceReference?: string },
+) =>
+  apiRequest<{ id: string; version: number }>(`/privacy-records/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+export const updatePrivacyRecord = (
+  id: string,
+  input: { version: number; status: string; note: string; evidenceReference?: string },
+) =>
+  apiRequest<{ id: string; version: number }>(`/privacy-records/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+===== src\lib\backend-api\dashboards.ts =====
+import { apiDownload, apiRequest, saveBlob } from "./client";
+
+export interface OperationsDashboard {
+  summary: {
+    total: number;
+    overdue: number;
+    createdToday: number;
+    completedToday: number;
+  };
+  statusMix: Record<string, number>;
+  stageHealth?: Array<{
+    status: string;
+    count: number;
+export interface OperationsDashboard {
+  summary: {
+    total: number;
+    overdue: number;
+    createdToday: number;
+    completedToday: number;
+  };
+  statusMix: Record<string, number>;
+  stageHealth?: Array<{
+    status: string;
+    count: number;
+    oldestAgeHours: number;
+    atRisk: number;
+export interface ExecutiveDashboard extends OperationsDashboard {
+  performance: {
+    averageTatHours: number | null;
+    slaPercentage: number | null;
+    completedCases: number;
+  };
+  performanceTrend: Array<{
+    month: string;
+    created: number;
+    slaPercentage: number | null;
+    averageTatHours: number | null;
+    overdue: number;
+  }>;
+export interface ExecutiveDashboardFilters {
+  months?: number;
+  from?: string;
+  to?: string;
+  clientId?: string;
+  branchId?: string;
+  checkType?: string;
+  priority?: string;
+  riskLevel?: string;
+}
+
+export interface ExecutiveCase {
+  id: string;
+export interface ExecutiveCase {
+  id: string;
+  caseNumber: string;
+  status: string;
+  priority: string;
+  riskLevel: string;
+  createdAt: string;
+  completedAt: string | null;
+  dueAt: string | null;
+  updatedAt: string;
+  subject: { fullName: string };
+  client: { publicId: string; displayName: string };
+  branch: { publicId: string; name: string } | null;
+export interface ExecutiveAttentionItem extends ExecutiveCase {
+  reasons: string[];
+  severity: number;
+  ageHours: number;
+}
+
+export interface ExecutivePerformanceRow {
+  id: string;
+  name: string;
+  total: number;
+  active: number;
+  completed: number;
+  overdue: number;
+export interface ExecutivePerformanceRow {
+  id: string;
+  name: string;
+  total: number;
+  active: number;
+  completed: number;
+  overdue: number;
+  slaPercentage: number | null;
+  averageTatHours: number | null;
+}
+
+type ExceptionCase = {
+  publicId: string;
+export interface ExceptionsDashboard {
+  summary: {
+    overdue: number;
+    clarifications: number;
+    fieldExceptions: number;
+    rejectedDocuments: number;
+    total: number;
+    uniqueCases: number;
+    critical: number;
+    resolvedToday: number;
+    averageAgeHours: number;
+    clientActions: number;
+  };
+export interface ClientAnalyticsDashboard {
+  branches: Array<{
+    id: string | null;
+    name: string;
+    city: string | null;
+    total: number;
+    active: number;
+    completed: number;
+    cancelled: number;
+    overdue: number;
+    pendingDocuments: number;
+    clarifications: number;
+    completionPercent: number;
+export function getOperationsDashboard() {
+  return apiRequest<OperationsDashboard>("/dashboards/operations");
+}
+
+export function getClientAnalyticsDashboard() {
+  return apiRequest<ClientAnalyticsDashboard>("/dashboards/client");
+}
+
+export function getExecutiveDashboard(filters: ExecutiveDashboardFilters = {}) {
+  const query = executiveQuery(filters);
+  return apiRequest<ExecutiveDashboard>(`/dashboards/executive${query ? `?${query}` : ""}`);
+}
+
+export function getClientAnalyticsDashboard() {
+  return apiRequest<ClientAnalyticsDashboard>("/dashboards/client");
+}
+
+export function getExecutiveDashboard(filters: ExecutiveDashboardFilters = {}) {
+  const query = executiveQuery(filters);
+  return apiRequest<ExecutiveDashboard>(`/dashboards/executive${query ? `?${query}` : ""}`);
+}
+
+export async function exportExecutiveDashboard(
+  format: "csv" | "pdf",
+  filters: ExecutiveDashboardFilters,
+) {
+export function getExecutiveDashboard(filters: ExecutiveDashboardFilters = {}) {
+  const query = executiveQuery(filters);
+  return apiRequest<ExecutiveDashboard>(`/dashboards/executive${query ? `?${query}` : ""}`);
+}
+
+export async function exportExecutiveDashboard(
+  format: "csv" | "pdf",
+  filters: ExecutiveDashboardFilters,
+) {
+  const query = executiveQuery({ ...filters, format } as ExecutiveDashboardFilters & {
+    format: string;
+  });
+  const blob = await apiDownload(`/dashboards/executive/export?${query}`);
+export async function exportExecutiveDashboard(
+  format: "csv" | "pdf",
+  filters: ExecutiveDashboardFilters,
+) {
+  const query = executiveQuery({ ...filters, format } as ExecutiveDashboardFilters & {
+    format: string;
+  });
+  const blob = await apiDownload(`/dashboards/executive/export?${query}`);
+  saveBlob(blob, `Sapling-Global-Executive-${new Date().toISOString().slice(0, 10)}.${format}`);
+}
+
+export function scheduleExecutiveDashboard(
+  input: ExecutiveDashboardFilters & {
+export function scheduleExecutiveDashboard(
+  input: ExecutiveDashboardFilters & {
+    recipientEmail: string;
+    deliveryAt: string;
+    format: "pdf" | "csv";
+  },
+) {
+  return apiRequest<{ scheduled: true; id: string; deliveryAt: string }>(
+    "/dashboards/executive/schedule",
+    { method: "POST", body: JSON.stringify(input) },
+  );
+}
+
+export function getExceptionsDashboard() {
+  return apiRequest<ExceptionsDashboard>("/dashboards/exceptions");
+}
+
+function executiveQuery(filters: ExecutiveDashboardFilters & { format?: string }) {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") params.set(key, String(value));
+  });
+  return params.toString();
+}

@@ -1,0 +1,101 @@
+/* =====================================================================
+   Pagination (components/ui/Pagination.tsx) — shared by every list page
+   ===================================================================== */
+
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 20px;
+  border-top: 1px solid #e6eee9;
+  font-size: 12px;
+  color: #5a6e62;
+}
+
+.pagination-summary strong {
+  color: #13241b;
+  font-weight: 600;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pagination-button {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8e4;
+  border-radius: 10px;
+  background: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #3c4a42;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background: #f6fbf8;
+  border-color: #d3eedc;
+  color: #15653c;
+}
+
+.pagination-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pagination-number.is-current {
+  background: linear-gradient(135deg, #5ad37f 0%, #22a65a 45%, #15653c 100%);
+  border-color: transparent;
+  color: #ffffff;
+  opacity: 1;
+}
+
+.pagination-gap {
+  min-width: 20px;
+  text-align: center;
+  color: #8fa198;
+}
+
+.pagination-more {
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid #d3eedc;
+  border-radius: 10px;
+  background: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #15653c;
+  cursor: pointer;
+}
+
+.pagination-more:hover:not(:disabled) {
+  background: #f6fbf8;
+}
+
+.pagination-more:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+@media (max-width: 560px) {
+  .pagination-bar {
+    justify-content: center;
+  }
+  /* on phones, keep only arrows and the current page */
+  .pagination-number:not(.is-current),
+  .pagination-gap {
+    display: none;
+  }
+}

@@ -1,0 +1,167 @@
+/* =====================================================================
+   Loading and error states shown in place of a page (PageState.tsx)
+   ===================================================================== */
+
+.page-state {
+  min-height: 60vh;
+  /* may be shown outside .app (e.g. the session check), so set the app font here */
+  font-family: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #13241b;
+  box-sizing: border-box;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.page-state-spinner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid #e2e8e4;
+  border-top-color: #22a65a;
+  animation: page-state-spin 0.8s linear infinite;
+}
+
+@keyframes page-state-spin {
+  to { transform: rotate(360deg); }
+}
+
+.page-state-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fdeceb;
+  color: #c0392b;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.page-state-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #13241b;
+}
+
+.page-state-text {
+  margin: 0;
+  max-width: 420px;
+  font-size: 13px;
+  color: #5a6e62;
+}
+
+.page-state-retry {
+  margin-top: 8px;
+  height: 38px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #5ad37f 0%, #22a65a 45%, #15653c 100%);
+  color: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-state-spinner { animation: none; }
+}
+
+/* =====================================================================
+   Loading skeleton (PageSkeleton.tsx)
+   ===================================================================== */
+
+.skeleton-page {
+  position: relative;
+  font-family: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* the shimmering placeholder block */
+.sk {
+  display: block;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #eef3f0 0%, #f7faf8 40%, #eef3f0 80%);
+  background-size: 300% 100%;
+  animation: sk-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes sk-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: 0 0; }
+}
+
+.sk-line { height: 10px; }
+.sk-title { height: 26px; width: 34%; margin: 10px 0; border-radius: 10px; }
+.sk-value { height: 28px; width: 32%; margin: 14px 0; border-radius: 12px; }
+.sk-bar { height: 38px; width: 100%; margin-top: 14px; border-radius: 14px; }
+.sk-w-15 { width: 15%; }
+.sk-w-35 { width: 35%; }
+.sk-w-40 { width: 40%; }
+.sk-w-90 { width: 90%; }
+
+.skeleton-heading { margin-bottom: 22px; }
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.skeleton-card {
+  padding: 22px;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid #e6eee9;
+}
+
+.skeleton-wide {
+  height: 160px;
+  margin-top: 16px;
+  border-radius: 18px;
+}
+
+/* "Loading data…" pill in the top-right corner of the page */
+.skeleton-pill {
+  position: fixed;
+  top: 76px;
+  right: 24px;
+  z-index: 15;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid #e2e8e4;
+  box-shadow: 0 10px 24px -16px rgba(16, 24, 20, 0.45);
+  font-size: 12px;
+  font-weight: 500;
+  color: #3c4a42;
+}
+
+.skeleton-spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #d3eedc;
+  border-top-color: #22a65a;
+  animation: page-state-spin 0.8s linear infinite;
+}
+
+@media (max-width: 900px) {
+  .skeleton-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .skeleton-grid { grid-template-columns: minmax(0, 1fr); }
+  .skeleton-pill { top: auto; bottom: 16px; right: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sk, .skeleton-spinner { animation: none; }
+}

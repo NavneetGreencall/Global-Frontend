@@ -1,0 +1,560 @@
+/* =====================================================================
+   Privacy desk page
+   ---------------------------------------------------------------------
+   Reuses the shared pieces from ReleasedReports.css:
+     page-header, page-title, summary-card, search-box, filter-select,
+     empty-icon, action-button, visually-hidden
+   and adds the workspace switch, notice, tools, form and list below.
+   The page background comes from ControlTower.css (same on every page).
+   ===================================================================== */
+
+.privacy-page {
+  /* Same colour set as the other pages */
+  --green: #22a65a;
+  --green-dark: #15653c;
+  --green-gradient: linear-gradient(135deg, #5ad37f 0%, #22a65a 45%, #15653c 100%);
+
+  /* Cards on this page are plain white (no light green wash).
+     The header, summary cards, workspace switch and tools all read these two. */
+  --card-gradient: #ffffff;
+  --card-border: #e2e8e4;
+
+  --text: #13241b;
+  --text-muted: #5a6e62;
+  --text-faint: #8fa198;
+
+  --white: #ffffff;
+  --line: #e6eee9;
+  --hover: #f6fbf8;
+
+  --red: #c0392b;
+  --amber: #9a6a05;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Four summary cards on this page */
+.privacy-page .summary-cards {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* White cards: a soft neutral shadow instead of the green one */
+.privacy-page .summary-card,
+.privacy-page .privacy-tool {
+  box-shadow: 0 1px 2px rgba(16, 24, 20, 0.04), 0 8px 22px -18px rgba(16, 24, 20, 0.35);
+}
+
+.privacy-page .summary-card-alert .summary-card-value {
+  color: var(--red);
+}
+
+.privacy-page .summary-card-alert .summary-card-icon {
+  background: linear-gradient(135deg, #ff8a7a, #c0392b);
+}
+
+/* ---------------------------------------------------------------------
+   Header with the "Record request / incident" button
+   --------------------------------------------------------------------- */
+
+.privacy-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.record-button {
+  height: 42px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--green-gradient);
+  color: var(--white);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 20px -12px rgba(21, 101, 60, 0.9);
+  transition: transform 0.15s;
+}
+
+.record-button:hover {
+  transform: translateY(-1px);
+}
+
+/* ---------------------------------------------------------------------
+   Workspace switch: requests / incidents
+   --------------------------------------------------------------------- */
+
+.privacy-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.privacy-switch-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--white);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.privacy-switch-option:hover {
+  border-color: var(--card-border);
+}
+
+.privacy-switch-option.is-active {
+  background: var(--card-gradient);
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(34, 166, 90, 0.12);
+}
+
+.privacy-switch-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef6f1;
+  color: var(--green-dark);
+}
+
+.privacy-switch-option.is-active .privacy-switch-icon {
+  background: var(--green-gradient);
+  color: var(--white);
+}
+
+.privacy-switch-option > span:nth-child(2) {
+  flex-grow: 1;
+}
+
+.privacy-switch-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.privacy-switch-text {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.privacy-switch-count {
+  flex-shrink: 0;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--white);
+  border: 1px solid var(--card-border);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--green-dark);
+}
+
+/* ---------------------------------------------------------------------
+   Notice
+   --------------------------------------------------------------------- */
+
+.privacy-notice {
+  margin: 0;
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: #fffaf2;
+  border: 1px solid #f5e3c4;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #7a5410;
+}
+
+.privacy-notice svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #c96410;
+}
+
+/* ---------------------------------------------------------------------
+   Tools: retention preview, vendor register
+   --------------------------------------------------------------------- */
+
+.privacy-tools {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.privacy-tool {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--card-gradient);
+  border: 1px solid var(--card-border);
+}
+
+.privacy-tool-icon {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--white);
+  border: 1px solid var(--card-border);
+  color: var(--green-dark);
+}
+
+.privacy-tool-body {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.privacy-tool-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.privacy-tool-text {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+a.privacy-tool-button {
+  flex-shrink: 0;
+  height: 34px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  background: var(--white);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green-dark);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+a.privacy-tool-button:hover {
+  background: var(--hover);
+}
+
+/* ---------------------------------------------------------------------
+   New record form
+   --------------------------------------------------------------------- */
+
+.privacy-form {
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: var(--white);
+  border: 1px solid var(--green);
+  box-shadow: 0 0 0 3px rgba(34, 166, 90, 0.1);
+}
+
+.privacy-form-title {
+  margin: 0 0 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.privacy-form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.privacy-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.privacy-field > span:first-child {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--green-dark);
+}
+
+.privacy-field .filter-select select {
+  width: 100%;
+}
+
+.privacy-input {
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  background: var(--white);
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.privacy-input:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(34, 166, 90, 0.12);
+}
+
+.privacy-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.privacy-form-hint,
+.privacy-form-error {
+  margin-right: auto;
+  font-size: 12px;
+}
+
+.privacy-form-hint {
+  color: var(--text-muted);
+}
+
+.privacy-form-error {
+  font-weight: 600;
+  color: var(--red);
+}
+
+.privacy-cancel-button,
+.privacy-save-button {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.privacy-cancel-button {
+  border: 1px solid var(--card-border);
+  background: var(--white);
+  color: var(--text);
+}
+
+.privacy-save-button {
+  border: 0;
+  background: var(--green-gradient);
+  color: var(--white);
+}
+
+/* ---------------------------------------------------------------------
+   Records card
+   --------------------------------------------------------------------- */
+
+.privacy-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 10px 28px -22px rgba(16, 40, 28, 0.35);
+  overflow: hidden;
+}
+
+.privacy-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.privacy-toolbar .search-box {
+  width: 320px;
+}
+
+.privacy-toolbar .filter-select select {
+  min-width: 170px;
+}
+
+.privacy-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.privacy-count strong {
+  color: var(--text);
+}
+
+.privacy-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 18px 20px 20px;
+  padding: 36px 20px;
+  border: 1px dashed var(--card-border);
+  border-radius: 14px;
+  text-align: center;
+}
+
+.privacy-empty strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.privacy-empty p {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.privacy-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.privacy-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) auto auto minmax(160px, 1fr);
+  gap: 16px;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.privacy-row:last-child {
+  border-bottom: 0;
+}
+
+.privacy-row:hover {
+  background: var(--hover);
+}
+
+.privacy-row-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.privacy-row-ref {
+  display: block;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.privacy-type-pill,
+.privacy-status-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.privacy-type-pill {
+  background: #eef6f1;
+  color: var(--green-dark);
+}
+
+/* One colour per status */
+.privacy-status-received,
+.privacy-status-investigating { background: #fdf4d9; color: var(--amber); }
+.privacy-status-in_review,
+.privacy-status-contained { background: #e6f0fb; color: #1f6fc1; }
+.privacy-status-decided { background: #efeafd; color: #5634b8; }
+.privacy-status-closed { background: #eef1f3; color: #52606b; }
+/* statuses used by the API */
+.privacy-status-open { background: #fdf4d9; color: var(--amber); }
+.privacy-status-approved { background: #e3f5ea; color: var(--green-dark); }
+.privacy-status-rejected { background: #fdeceb; color: var(--red); }
+.privacy-status-fulfilled { background: #eef1f3; color: #52606b; }
+
+.privacy-dates {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.privacy-due {
+  font-weight: 600;
+  color: var(--green-dark);
+}
+
+.privacy-due-soon {
+  color: var(--red);
+}
+
+/* ---------------------------------------------------------------------
+   Smaller screens
+   --------------------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .privacy-page .summary-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .privacy-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .privacy-switch,
+  .privacy-tools {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .privacy-toolbar .search-box {
+    width: 100%;
+  }
+  .privacy-count {
+    margin-left: 0;
+  }
+  .privacy-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .privacy-dates {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+  .privacy-form-actions {
+    flex-wrap: wrap;
+  }
+  .privacy-form-hint,
+  .privacy-form-error {
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .privacy-page .summary-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

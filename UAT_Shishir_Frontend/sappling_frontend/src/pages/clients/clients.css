@@ -1,0 +1,415 @@
+/* =====================================================================
+   Client management page
+   ---------------------------------------------------------------------
+   Reuses the shared pieces from ReleasedReports.css:
+     page-header, page-title, summary-card, search-box, filter-select,
+     empty-state, action-button, visually-hidden
+   and adds the client cards below. The page background comes from
+   ControlTower.css (same on every page).
+   ===================================================================== */
+
+.clients-page {
+  /* Same colour set as the Released reports page */
+  --green-light: #5ad37f;
+  --green: #22a65a;
+  --green-dark: #15653c;
+  --green-gradient: linear-gradient(135deg, #5ad37f 0%, #22a65a 45%, #15653c 100%);
+  /* Cards are plain white; change these two to bring a colour wash back */
+  --card-gradient: #ffffff;
+  --card-border: #e2e8e4;
+
+  --text: #13241b;
+  --text-muted: #5a6e62;
+  --text-faint: #8fa198;
+
+  --white: #ffffff;
+  --line: #e6eee9;
+  --hover: #f6fbf8;
+
+  --red: #c0392b;
+  --red-soft: #fdeceb;
+  --amber: #9a6a05;
+  --amber-soft: #fdf4d9;
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ---------------------------------------------------------------------
+   Header with the "Onboard client" button
+   --------------------------------------------------------------------- */
+
+.clients-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.onboard-button {
+  height: 42px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--green-gradient);
+  color: var(--white);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 20px -12px rgba(21, 101, 60, 0.9);
+  transition: transform 0.15s;
+}
+
+.onboard-button:hover {
+  transform: translateY(-1px);
+}
+
+/* Four summary cards on this page (Released reports has three) */
+.clients-page .summary-cards {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* A summary card that needs attention shows its number in red */
+.summary-card-alert .summary-card-value {
+  color: var(--red);
+}
+
+.summary-card-alert .summary-card-icon {
+  background: linear-gradient(135deg, #ff8a7a, #c0392b);
+}
+
+/* ---------------------------------------------------------------------
+   Toolbar: search, filters, count
+   --------------------------------------------------------------------- */
+
+.clients-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 28px -24px rgba(16, 40, 28, 0.35);
+}
+
+.clients-toolbar .filter-select select {
+  min-width: 170px;
+}
+
+.clients-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.clients-count strong {
+  color: var(--text);
+}
+
+/* ---------------------------------------------------------------------
+   Client cards
+   --------------------------------------------------------------------- */
+
+.client-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 16px;
+}
+
+.client-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 26px -22px rgba(16, 40, 28, 0.4);
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.client-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--card-border);
+  box-shadow: 0 18px 34px -24px rgba(21, 101, 60, 0.45);
+}
+
+/* Top row: logo, name, status, menu */
+.client-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.client-logo {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-gradient);
+  border: 1px solid var(--card-border);
+  color: var(--green-dark);
+}
+
+.client-title {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+a.client-name {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+}
+
+a.client-name:hover {
+  color: var(--green-dark);
+}
+
+.client-code {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Status pill */
+.status-pill {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-pill i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-active {
+  background: #e3f5ea;
+  color: var(--green-dark);
+}
+
+.status-onboarding {
+  background: #e6f0fb;
+  color: #1f6fc1;
+}
+
+.status-paused {
+  background: #eef1f3;
+  color: #52606b;
+}
+
+/* The ⋯ menu */
+.client-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.client-menu-button {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.client-menu-button:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.client-menu-list {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 20;
+  min-width: 190px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 18px 40px -16px rgba(16, 40, 28, 0.3);
+}
+
+.client-menu-list a,
+.client-menu-list button {
+  height: 36px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.client-menu-list a:hover,
+.client-menu-list button:hover {
+  background: var(--hover);
+  color: var(--green-dark);
+}
+
+/* Middle: the four numbers, on a light green-to-white strip */
+.client-stats {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--card-gradient);
+  border: 1px solid var(--card-border);
+}
+
+.client-stat dt {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--green-dark);
+}
+
+.client-stat dd {
+  margin: 3px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.client-stat dd.stat-warn {
+  color: var(--red);
+}
+
+.client-stat dd.stat-muted {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  padding-top: 4px;
+}
+
+/* Bottom: contact, active since, open button */
+.client-card-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.client-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.client-contact,
+.client-since {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.client-contact em {
+  font-style: normal;
+  color: var(--amber);
+}
+
+.client-dot {
+  color: var(--text-faint);
+}
+
+a.client-open-button {
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  background: var(--white);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--green-dark);
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+a.client-open-button:hover {
+  background: var(--card-gradient);
+}
+
+/* ---------------------------------------------------------------------
+   Smaller screens
+   --------------------------------------------------------------------- */
+
+@media (max-width: 1200px) {
+  .clients-page .summary-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .client-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .client-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .clients-count {
+    margin-left: 0;
+  }
+  .client-meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* Pager under the client cards */
+.clients-pager {
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid #e2e8e4;
+}
+
+.clients-pager .pagination-bar {
+  border-top: 0;
+}

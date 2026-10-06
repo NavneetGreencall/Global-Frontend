@@ -1,0 +1,678 @@
+/* page-kit.css: Page header, summary cards, search box, filter selects, empty state and pager; plus Released reports.
+   Loaded once for the whole app from src/main.tsx. */
+
+/* =====================================================================
+   Released reports page
+   ---------------------------------------------------------------------
+   Self-contained styles with plain class names. Only the page shell
+   (sidebar, header, .page spacing) comes from ControlTower.css.
+
+   Colours are defined once below. Change them here to restyle the page.
+   ===================================================================== */
+
+.reports-page {
+  /* Brand (from the logo) */
+  --green-light: #5ad37f;
+  --green: #22a65a;
+  --green-dark: #15653c;
+  --green-gradient: linear-gradient(135deg, #5ad37f 0%, #22a65a 45%, #15653c 100%);
+
+  /* Card gradient: light green fading to white */
+  /* Cards are plain white; change these two to bring a colour wash back */
+  --card-gradient: #ffffff;
+  --card-border: #e2e8e4;
+
+  /* Text */
+  --text: #13241b;
+  --text-muted: #5a6e62;
+  --text-faint: #8fa198;
+
+  /* Surfaces */
+  --white: #ffffff;
+  --line: #e6eee9;
+  --hover: #f6fbf8;
+
+  /* Status */
+  --red: #c0392b;
+  --red-soft: #fdeceb;
+  --amber: #9a6a05;
+  --amber-soft: #fdf4d9;
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ---------------------------------------------------------------------
+   Page header
+   --------------------------------------------------------------------- */
+
+/* Just a heading: no card behind it */
+.page-header {
+  padding: 4px 0 0;
+}
+
+.page-eyebrow {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green-dark);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.page-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------------------
+   Summary cards (light green to white)
+   --------------------------------------------------------------------- */
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: var(--card-gradient);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 10px 24px -18px rgba(21, 101, 60, 0.45);
+  transition: transform 0.15s;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+}
+
+.summary-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.summary-card-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green-dark);
+}
+
+.summary-card-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green-gradient);
+  color: var(--white);
+}
+
+.summary-card-value {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--green-dark);
+}
+
+.summary-card-note {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------------------
+   Report library card
+   --------------------------------------------------------------------- */
+
+.report-library {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 10px 28px -22px rgba(16, 40, 28, 0.35);
+  overflow: hidden;
+}
+
+.library-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.library-title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.library-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.count-badge {
+  min-width: 22px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef2f0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.library-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Search input */
+.search-box {
+  width: 280px;
+  height: 38px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  background: var(--white);
+  color: var(--text-faint);
+}
+
+.search-box:focus-within {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(34, 166, 90, 0.12);
+}
+
+.search-box input {
+  flex-grow: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+}
+
+/* Dropdown filters */
+.filter-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.filter-select select {
+  appearance: none;
+  -webkit-appearance: none;
+  min-width: 150px;
+  height: 38px;
+  padding: 0 32px 0 12px;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  background: var(--white);
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.filter-select svg {
+  position: absolute;
+  right: 10px;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------
+   Report rows
+   --------------------------------------------------------------------- */
+
+.report-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.report-row {
+  display: grid;
+  grid-template-columns: minmax(240px, 1.5fr) minmax(140px, 1fr) minmax(120px, 0.8fr) minmax(110px, 0.7fr) minmax(160px, 0.9fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  transition: background 0.15s;
+}
+
+.report-row:last-child {
+  border-bottom: 0;
+}
+
+.report-row:hover {
+  background: var(--hover);
+}
+
+.report-person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.report-avatar {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-gradient);
+  border: 1px solid var(--card-border);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--green-dark);
+}
+
+.report-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+}
+
+a.report-name:hover {
+  color: var(--green-dark);
+}
+
+.report-case {
+  display: block;
+  margin-top: 1px;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.report-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.report-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.report-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.report-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Verdict pills */
+.verdict-pill {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.verdict-clear {
+  background: #e3f5ea;
+  color: var(--green-dark);
+}
+
+.verdict-discrepancy {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.verdict-unable {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+/* Row buttons */
+.report-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.action-button {
+  height: 32px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--card-border);
+  border-radius: 9px;
+  background: var(--white);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green-dark);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.action-button:hover {
+  background: var(--hover);
+}
+
+/* "a.action-button-primary" so the link keeps white text over the shell's link colour */
+.action-button-primary,
+a.action-button-primary {
+  border-color: transparent;
+  background: var(--green-gradient);
+  color: var(--white);
+}
+
+.action-button-primary:hover {
+  background: var(--green-gradient);
+  box-shadow: 0 6px 14px -8px rgba(21, 101, 60, 0.8);
+}
+
+/* ---------------------------------------------------------------------
+   Empty state
+   --------------------------------------------------------------------- */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 48px 20px 52px;
+  text-align: center;
+}
+
+.empty-state strong {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.empty-state p {
+  margin: 0;
+  max-width: 380px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.empty-state .action-button {
+  margin-top: 10px;
+}
+
+.empty-icon {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 8px;
+  border-radius: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green-gradient);
+  color: var(--white);
+  box-shadow: 0 10px 22px -12px rgba(21, 101, 60, 0.8);
+}
+
+/* The four release steps shown when the library is empty */
+.release-steps {
+  list-style: none;
+  margin: 22px 0 0;
+  padding: 0;
+  display: flex;
+  align-items: flex-start;
+}
+
+.release-step {
+  position: relative;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.release-step-icon {
+  position: relative;
+  z-index: 1;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-gradient);
+  border: 1px solid var(--card-border);
+  color: var(--green-dark);
+}
+
+.release-step:last-child .release-step-icon {
+  background: var(--green-gradient);
+  border-color: transparent;
+  color: var(--white);
+}
+
+.release-step-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.release-step-line {
+  position: absolute;
+  top: 19px;
+  left: calc(50% + 22px);
+  width: calc(100% - 44px);
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--card-border) 0 6px, transparent 6px 10px);
+}
+
+/* ---------------------------------------------------------------------
+   Footer + pagination
+   --------------------------------------------------------------------- */
+
+.library-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.library-footer strong {
+  color: var(--text);
+}
+
+.pager {
+  display: flex;
+  gap: 6px;
+}
+
+.pager-button {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--card-border);
+  background: var(--white);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.pager-button:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--green-dark);
+}
+
+.pager-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Hides text visually but keeps it for screen readers */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------
+   Smaller screens
+   --------------------------------------------------------------------- */
+
+@media (max-width: 1200px) {
+  .report-row {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 0.8fr) auto;
+  }
+  /* hide Package and Released columns */
+  .report-row > .report-cell:nth-child(3),
+  .report-row > .report-cell:nth-child(5) {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .summary-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .search-box {
+    width: 100%;
+  }
+  .report-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  .report-actions {
+    justify-content: flex-end;
+  }
+  .release-steps {
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .release-step-line {
+    display: none;
+  }
+}
+
+/* =====================================================================
+   Plain white top cards on Executive Analytics, Sales & CRM, Cases,
+   Verifier Operations and QA Review, matching the summary cards on
+   Released reports: white card, grey border, green title, green icon
+   square and a dark green number. (Exceptions and Field use .is-leaf
+   cards and are not affected.)
+   ===================================================================== */
+
+main.page .stat-card:is(.is-brand, .is-orange, .is-teal, .is-violet, .is-red) {
+  background: #ffffff;
+  color: #13241b;
+  border: 1px solid #e2e8e4;
+  box-shadow: 0 10px 24px -18px rgba(21, 101, 60, 0.45);
+}
+
+main.page .stat-card:is(.is-brand, .is-orange, .is-teal, .is-violet, .is-red)::before,
+main.page .stat-card:is(.is-brand, .is-orange, .is-teal, .is-violet, .is-red)::after {
+  display: none;
+}
+
+main.page .stat-card:is(.is-brand, .is-orange, .is-teal, .is-violet, .is-red) .stat-card-top {
+  color: #15653c;
+  font-weight: 600;
+  opacity: 1;
+}
+
+main.page .stat-card:is(.is-brand, .is-orange, .is-teal, .is-violet, .is-red) .stat-card-icon {
+  background: linear-gradient(135deg, #5ad37f 0%, #22a65a 45%, #15653c 100%);
+  color: #ffffff;
+}
+
+main.page .stat-card:is(.is-brand, .is-orange, .is-teal, .is-violet, .is-red) strong {
+  color: #15653c;
+}
+
+main.page .stat-card:is(.is-brand, .is-orange, .is-teal, .is-violet, .is-red) small {
+  color: #5a6e62;
+  opacity: 1;
+}
+
+/* Sales & CRM: the change pill and trend line were white-on-colour; now green-on-white */
+main.page .stat-card.sales-kpi .sales-delta { background: #e3f5ea; color: #15653c; }
+main.page .stat-card.sales-kpi .sales-spark-fill { fill: rgba(34, 166, 90, 0.12); }
+main.page .stat-card.sales-kpi .sales-spark-line { stroke: #22a65a; }
+main.page .stat-card.sales-kpi .sales-spark-dot { fill: #22a65a; }
+
+/* Cases & Delivery: quick-view cards (they are also filters) */
+main.page .cases-quick-card {
+  background: #ffffff;
+  border: 1px solid #e2e8e4;
+  box-shadow: 0 10px 24px -18px rgba(21, 101, 60, 0.45);
+}
+main.page .cases-quick-card .cases-quick-icon {
+  background: linear-gradient(135deg, #5ad37f 0%, #22a65a 45%, #15653c 100%);
+  color: #ffffff;
+}
+main.page .cases-quick-card .cases-quick-text span { color: #15653c; font-weight: 600; }
+main.page .cases-quick-card .cases-quick-text strong { color: #15653c; }
+
+/* the selected quick view: same white card with a green outline */
+main.page .cases-quick-card.is-active {
+  background: #ffffff;
+  border-color: #22a65a;
+  box-shadow: 0 0 0 3px rgba(34, 166, 90, 0.14);
+}

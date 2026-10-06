@@ -1,0 +1,109 @@
+/* =====================================================================
+   Sales & CRM — builds on ControlTower.css and ExecutiveAnalytics.css
+   ===================================================================== */
+
+/* KPI cards with sparkline */
+.sales-kpi { gap: 4px; }
+.sales-kpi strong { font-size: 24px; }
+.sales-kpi-footer { position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; margin-top: 6px; }
+.sales-delta {
+  display: inline-flex; align-items: center; gap: 3px;
+  height: 22px; padding: 0 8px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  font-size: 11px; font-weight: 600;
+}
+.sales-spark { width: 92px; height: 30px; overflow: visible; }
+.sales-spark-fill { fill: rgba(255, 255, 255, 0.18); }
+.sales-spark-line { fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; }
+.sales-spark-dot { fill: #fff; }
+/* On the white (green) card the trend line and chip turn green */
+.stat-card.is-brand .sales-delta { background: #e3f5ea; color: var(--brand-3); }
+.stat-card.is-brand .sales-spark-fill { fill: rgba(34, 166, 90, 0.12); }
+.stat-card.is-brand .sales-spark-line { stroke: var(--brand-2); }
+.stat-card.is-brand .sales-spark-dot { fill: var(--brand-2); }
+
+/* Follow-up cards */
+.sales-follow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.sales-follow-card {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  color: var(--ink-2) !important;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.sales-follow-card:hover { transform: translateY(-1px); box-shadow: 0 12px 26px -14px rgba(16, 40, 28, 0.28); }
+.sales-follow-icon { width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
+.sales-follow-label { flex-grow: 1; font-size: 13px; font-weight: 500; }
+.sales-follow-card strong { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; color: var(--ink); }
+.sales-follow-go { color: var(--ink-4); display: inline-flex; transition: transform 0.15s, color 0.15s; }
+.sales-follow-card:hover .sales-follow-go { transform: translateX(2px); color: var(--ink-2); }
+
+.sales-follow-card.is-green { background: #ffffff; border-color: #e2e8e4; }
+.sales-follow-card.is-green .sales-follow-icon { background: var(--brand-grad); color: #fff; }
+.sales-follow-card.is-red { background: linear-gradient(120deg, #fffbfa 0%, #fde6e2 100%); border-color: #f4d3cd; }
+.sales-follow-card.is-red .sales-follow-icon { background: linear-gradient(135deg, #f6a497, #d64545); color: #fff; }
+.sales-follow-card.is-teal { background: linear-gradient(120deg, #fbfefe 0%, #dff3f4 100%); border-color: #cbe8ea; }
+.sales-follow-card.is-teal .sales-follow-icon { background: var(--teal-grad); color: #fff; }
+
+/* Revenue trend */
+.sales-trend-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.sales-tabs { display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: #f2f6f3; }
+.sales-tabs button {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 32px; padding: 0 12px;
+  border: 0; border-radius: 8px; background: transparent;
+  font-size: 12px; font-weight: 600; color: var(--ink-3); cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.sales-tabs button i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); opacity: 0.45; }
+.sales-tabs button.is-active { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(16, 40, 28, 0.12); }
+.sales-tabs button.is-active i { opacity: 1; }
+
+.sales-trend-value { display: flex; align-items: center; gap: 10px; }
+.sales-trend-value strong { font-size: 28px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
+.sales-change { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.sales-change.is-up { background: linear-gradient(90deg, #dff5e7, #c9eed6); color: var(--brand-3); }
+.sales-change.is-down { background: linear-gradient(90deg, #fde8e5, #fbd9d3); color: #c0392b; }
+.sales-change.is-new { background: linear-gradient(90deg, #e2f4f5, #cdecee); color: #0e7677; }
+
+.sales-area { animation: area-fade 0.5s ease both; }
+.sales-line { stroke-width: 2.6; stroke-dasharray: 1400; stroke-dashoffset: 1400; animation: line-draw 1s ease-out forwards; }
+@keyframes area-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* Pipeline health */
+.sales-ring { position: relative; width: 150px; height: 150px; margin: 4px auto 0; }
+.sales-ring svg { width: 100%; height: 100%; }
+.sales-ring-bg { fill: none; stroke: #edf4ef; stroke-width: 13; }
+.sales-ring-value { fill: none; stroke: url(#sc-ring-g); stroke-width: 13; stroke-linecap: round; }
+.sales-ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.sales-ring-center strong {
+  font-size: 30px; font-weight: 600; letter-spacing: -0.03em; line-height: 1;
+  background: var(--brand-grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.sales-ring-center span { font-size: 11px; color: var(--ink-3); margin-top: 4px; }
+
+.sales-facts { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.sales-facts div { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-radius: 10px; }
+.sales-facts dt { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--ink-2); }
+.sales-facts dd { margin: 0; font-size: 14px; font-weight: 600; }
+.sales-facts .is-teal { background: linear-gradient(90deg, #eaf7f7, #f6fbfb); }
+.sales-facts .is-teal dt svg, .sales-facts .is-teal dd { color: #0e7677; }
+.sales-facts .is-green { background: #ffffff; border: 1px solid #e2e8e4; }
+.sales-facts .is-green dt svg, .sales-facts .is-green dd { color: var(--brand-3); }
+.sales-facts .is-orange { background: linear-gradient(90deg, #fef1e2, #fffaf4); }
+.sales-facts .is-orange dt svg, .sales-facts .is-orange dd { color: #c96410; }
+
+.sales-new { display: inline-flex; align-items: center; gap: 6px; }
+
+@media (max-width: 1200px) {
+  .sales-health { grid-column: span 2; }
+}
+@media (max-width: 900px) {
+  .sales-follow { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .sales-health { grid-column: auto; }
+  .sales-trend-bar { flex-direction: column; align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sales-line { stroke-dashoffset: 0; animation: none; }
+}

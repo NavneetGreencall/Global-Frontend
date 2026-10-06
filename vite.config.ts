@@ -91,7 +91,7 @@ export default defineConfig(({ command, mode }) => {
       proxy: {
         "/api/v1": {
           target: developmentApiTarget,
-          changeOrigin: false,
+          changeOrigin: true,
         },
       },
       watch: {

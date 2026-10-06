@@ -1,0 +1,27 @@
+/* "Assign owner" dialog (AssignOwnerDialog.tsx) */
+
+.assign-people {
+  display: flex; flex-direction: column; gap: 6px;
+  margin-top: 12px; max-height: 300px; overflow-y: auto;
+}
+
+.assign-person {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border: 1px solid #e2e8e4; border-radius: 12px; cursor: pointer;
+}
+.assign-person:hover { background: #f6fbf8; }
+.assign-person.is-selected { border-color: #22a65a; background: #f1faf4; box-shadow: 0 0 0 3px rgba(34, 166, 90, 0.12); }
+.assign-person input { accent-color: #22a65a; }
+
+.assign-avatar {
+  width: 32px; height: 32px; border-radius: 50%; flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #eaf4ee; color: #1e5b43; font-size: 12px; font-weight: 700;
+}
+.assign-who strong { display: block; font-size: 13px; color: #13241b; }
+.assign-who small { display: block; font-size: 12px; color: #5a6e62; }
+
+.assign-failed {
+  margin: 12px 0 0; padding: 10px 12px 10px 28px; border-radius: 10px;
+  background: #fdeceb; color: #a8352a; font-size: 12px;
+}

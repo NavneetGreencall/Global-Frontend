@@ -1,0 +1,99 @@
+/* =====================================================================
+   Shared dialog styles (Create user ID, Record privacy request, ...)
+   ===================================================================== */
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000; /* above the sticky header (and the mobile sidebar) */
+  /* drawn outside .app, so it sets the app's font itself */
+  font-family: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #13241b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(16, 26, 20, 0.45);
+}
+
+.dialog {
+  width: 100%;
+  max-width: 760px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 30px 80px -30px rgba(16, 26, 20, 0.55);
+}
+
+.dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 24px 8px;
+}
+
+.dialog-title { margin: 0; font-size: 20px; font-weight: 600; color: #13241b; }
+.dialog-subtitle { margin: 4px 0 0; font-size: 13px; color: #5a6e62; }
+
+.dialog-close {
+  width: 34px; height: 34px; border: 0; border-radius: 10px;
+  background: transparent; font-size: 22px; color: #5a6e62; cursor: pointer;
+}
+.dialog-close:hover { background: #f3f6f4; }
+
+.dialog-body { padding: 8px 24px 22px; }
+
+.dialog-section { padding: 14px 0; border-bottom: 1px solid #e6eee9; }
+.dialog-section:last-of-type { border-bottom: 0; }
+
+.dialog-section-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+.dialog-section-head h3 { margin: 0; font-size: 14px; font-weight: 600; color: #13241b; }
+.dialog-section-head p { margin: 2px 0 0; font-size: 12px; color: #5a6e62; }
+
+.dialog-required {
+  padding: 3px 10px; border-radius: 999px; background: #f1f4f2;
+  font-size: 11px; font-weight: 600; color: #5a6e62;
+}
+
+/* Buttons */
+.dialog-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding-top: 16px; }
+.dialog-actions .dialog-error { margin-right: auto; }
+
+.dialog-primary,
+.dialog-secondary {
+  height: 38px; padding: 0 16px; border-radius: 10px;
+  font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.dialog-primary { border: 0; background: linear-gradient(135deg, #5ad37f 0%, #22a65a 45%, #15653c 100%); color: #ffffff; }
+.dialog-secondary { border: 1px solid #d5ddd8; background: #ffffff; color: #13241b; }
+.dialog-primary:disabled, .dialog-secondary:disabled { opacity: 0.6; cursor: progress; }
+
+/* Fields */
+.dialog-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+
+.dialog-field { display: flex; flex-direction: column; gap: 6px; }
+.dialog-field > span { font-size: 12px; font-weight: 600; color: #15653c; }
+.dialog-field input,
+.dialog-field select {
+  height: 40px; padding: 0 12px; border: 1px solid #d5ddd8; border-radius: 10px;
+  background: #ffffff; font: inherit; font-size: 13px; color: #13241b;
+}
+.dialog-field input:focus,
+.dialog-field select:focus { outline: none; border-color: #22a65a; box-shadow: 0 0 0 3px rgba(34, 166, 90, 0.14); }
+
+.dialog-field textarea {
+  min-height: 110px; padding: 10px 12px; border: 1px solid #d5ddd8; border-radius: 10px;
+  font: inherit; font-size: 13px; color: #13241b; resize: vertical;
+}
+.dialog-field textarea:focus { outline: none; border-color: #22a65a; box-shadow: 0 0 0 3px rgba(34, 166, 90, 0.14); }
+.dialog-hint { font-size: 12px; color: #5a6e62; }
+.dialog-error { font-size: 12px; font-weight: 600; color: #a8352a; }
+.dialog-full { grid-column: 1 / -1; }
+
+@media (max-width: 640px) {
+  .dialog-grid { grid-template-columns: minmax(0, 1fr); }
+}

@@ -1,0 +1,1241 @@
+﻿===== src\lib\backend-api\cases.ts =====
+import type { CaseDraft } from "@/features/cases/new-case/model";
+import { toIndianMobileE164 } from "@/lib/indian-mobile";
+import { apiDownload, apiRequest, saveBlob } from "./client";
+import type { CaseServiceScope } from "./case-services";
+
+export type ClientOption = {
+  publicId: string;
+  code: string;
+  legalName: string;
+  displayName: string;
+  contactName?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  status: string;
+  slaHours: number;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CaseServicePackage = {
+  id: string;
+  code: string;
+  name: string;
+  checks: string[];
+  serviceFamily?: string;
+  requiredDocuments?: string[];
+  price?: string | number | null;
+  tatHours: number;
+};
+
+export interface CaseListItem {
+  id: string;
+  caseNumber: string;
+  externalRef?: string | null;
+  status: string;
+  priority: string;
+  dueAt?: string | null;
+  completedAt?: string | null;
+  riskLevel?: string | null;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+  subject: {
+    publicId: string;
+    fullName: string;
+    email?: string | null;
+    phone?: string | null;
+    employeeCode?: string | null;
+  };
+  client: { publicId: string; code: string; displayName: string };
+  services?: CaseServiceScope[];
+  servicePackage?: {
+    publicId: string;
+    code: string;
+    name: string;
+    tatHours: number;
+  } | null;
+  branch?: { publicId: string; name: string; city?: string | null } | null;
+  assignedOpsUser?: { publicId: string; displayName: string } | null;
+  checks: Array<{
+    publicId: string;
+    type: string;
+    status: string;
+    result?: string | null;
+    riskLevel?: string | null;
+    dueAt?: string | null;
+    completedAt?: string | null;
+    sourceSummary?: string | null;
+    version?: number;
+    tasks?: Array<{
+      publicId: string;
+      status: string;
+      instructions?: string | null;
+      blockerReason?: string | null;
+      dueAt?: string | null;
+      startedAt?: string | null;
+      createdAt?: string;
+      completedAt?: string | null;
+      version: number;
+      assignee?: { publicId: string; displayName: string; email: string } | null;
+    }>;
+  }>;
+  fieldVisits?: Array<{
+    publicId: string;
+    status: string;
+    version: number;
+    address: string;
+    geofenceMeters: number;
+    distanceMeters?: number | null;
+    capturedAt?: string | null;
+    checkedInAt?: string | null;
+    completedAt?: string | null;
+    createdAt: string;
+    assignee?: { publicId: string; displayName: string; email: string } | null;
+    _count?: { evidence: number };
+  }>;
+}
+
+export interface CaseDetail extends CaseListItem {
+  qaReviewer?: { publicId: string; displayName: string; email: string } | null;
+  statusHistory: Array<{
+    fromStatus?: string | null;
+    toStatus: string;
+    reason?: string | null;
+    createdAt: string;
+  }>;
+  consents: Array<{
+    publicId: string;
+    status: string;
+    purpose: string;
+    noticeVersion: string;
+    acceptedAt?: string | null;
+    withdrawnAt?: string | null;
+    createdAt: string;
+  }>;
+  documents: Array<{
+    publicId: string;
+    type: string;
+    status: string;
+    currentVersion: number;
+    expiresAt?: string | null;
+    version: number;
+    reviewNote?: string | null;
+    reviewedAt?: string | null;
+    versions: Array<{
+      version: number;
+      originalName: string;
+      contentType: string;
+      sizeBytes: string;
+      sha256: string;
+      malwareState: string;
+      createdAt: string;
+    }>;
+  }>;
+  clarifications: Array<{
+    publicId: string;
+    status: string;
+    subject: string;
+    dueAt?: string | null;
+    resolvedAt?: string | null;
+    createdAt: string;
+  }>;
+  qaReviews: Array<{
+    publicId: string;
+    decision: string;
+    notes?: string | null;
+    checklistJson: string;
+    createdAt: string;
+  }>;
+  reports: Array<{
+    publicId: string;
+    status: string;
+    currentVersion: number;
+    publishedAt?: string | null;
+    createdAt: string;
+  }>;
+  fieldVisits: Array<{
+    publicId: string;
+    status: string;
+    version: number;
+    address: string;
+    geofenceMeters: number;
+    distanceMeters?: number | null;
+    capturedAt?: string | null;
+    checkedInAt?: string | null;
+    completedAt?: string | null;
+    createdAt: string;
+    assignee?: { publicId: string; displayName: string; email: string } | null;
+    _count?: { evidence: number };
+    evidence?: Array<{
+      publicId: string;
+      type?: string;
+      contentType?: string;
+      capturedAt?: string;
+      createdAt?: string;
+    }>;
+  }>;
+}
+
+export interface CaseListQueryInput {
+  risk?: string;
+  owner?: string;
+  ownerId?: string;
+  unassigned?: boolean;
+  dueToday?: boolean;
+  dueNext7Days?: boolean;
+  view?: "all" | "operations";
+  search?: string;
+  status?: string;
+  stage?: string;
+  clientId?: string;
+  priority?: string;
+  sla?: string;
+  from?: string;
+  to?: string;
+  sortBy?: "updatedAt" | "sla" | "candidateName" | "priority" | "progress";
+  sortDir?: "asc" | "desc";
+  page?: number;
+  pageSize?: number;
+  limit?: number;
+  cursor?: string;
+}
+
+export interface CaseListResponse {
+  items: CaseListItem[];
+  nextCursor: string | null;
+  total: number;
+  page?: number;
+  pageSize?: number;
+}
+
+export function listCases(input: CaseListQueryInput = {}, signal?: AbortSignal) {
+  const query = new URLSearchParams();
+  for (const key of [
+    "risk",
+    "owner",
+    "ownerId",
+    "unassigned",
+    "dueToday",
+    "dueNext7Days",
+    "view",
+  ] as const) {
+    if (input[key] !== undefined) query.set(key, String(input[key]));
+  }
+  if (input.search) query.set("search", input.search);
+  if (input.status) query.set("status", input.status);
+  if (input.stage) query.set("stage", input.stage);
+  if (input.clientId) query.set("clientId", input.clientId);
+  if (input.priority) query.set("priority", input.priority);
+  if (input.sla) query.set("sla", input.sla);
+  if (input.from) query.set("from", input.from);
+  if (input.to) query.set("to", input.to);
+  if (input.sortBy) query.set("sortBy", input.sortBy);
+  if (input.sortDir) query.set("sortDir", input.sortDir);
+  if (input.page) query.set("page", String(input.page));
+  if (input.pageSize) query.set("pageSize", String(input.pageSize));
+  if (input.cursor) query.set("cursor", input.cursor);
+  query.set("limit", String(input.limit ?? 20));
+  return apiRequest<CaseListResponse>(`/cases?${query.toString()}`, { signal });
+}
+
+export function getCase(caseId: string) {
+  return apiRequest<CaseDetail>(`/cases/${caseId}`);
+}
+
+export async function exportCases(input: Omit<CaseListQueryInput, "cursor" | "limit"> = {}) {
+  const query = new URLSearchParams();
+  for (const key of [
+    "risk",
+    "owner",
+    "ownerId",
+    "unassigned",
+    "dueToday",
+    "dueNext7Days",
+    "view",
+  ] as const) {
+    if (input[key] !== undefined) query.set(key, String(input[key]));
+  }
+  if (input.search) query.set("search", input.search);
+  if (input.status) query.set("status", input.status);
+  if (input.stage) query.set("stage", input.stage);
+  if (input.clientId) query.set("clientId", input.clientId);
+  if (input.priority) query.set("priority", input.priority);
+  if (input.sla) query.set("sla", input.sla);
+  if (input.from) query.set("from", input.from);
+  if (input.to) query.set("to", input.to);
+  if (input.sortBy) query.set("sortBy", input.sortBy);
+  if (input.sortDir) query.set("sortDir", input.sortDir);
+  const blob = await apiDownload(`/cases/export?${query.toString()}`);
+  saveBlob(blob, `sapling-global-cases-${new Date().toISOString().slice(0, 10)}.csv`);
+}
+
+export interface ClientListResponse {
+  items: ClientOption[];
+  nextCursor: string | null;
+  total: number;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface ClientListInput {
+  search?: string;
+  status?: string;
+  cursor?: string;
+  limit?: number;
+  page?: number;
+  pageSize?: number;
+}
+
+export function listClients(): Promise<ClientListResponse>;
+export function listClients(input: {
+  search?: string;
+  status?: string;
+  cursor?: string;
+  limit?: number;
+  page?: number;
+  pageSize?: number;
+}): Promise<ClientListResponse>;
+export function listClients(input: ClientListInput = {}) {
+  const query = new URLSearchParams({ limit: String(input.limit ?? 100) });
+  if (input.search) query.set("search", input.search);
+  if (input.status) query.set("status", input.status);
+  if (input.cursor) query.set("cursor", input.cursor);
+  if (input.page) query.set("page", String(input.page));
+  if (input.pageSize) query.set("pageSize", String(input.pageSize));
+  return apiRequest<ClientListResponse>(`/clients?${query.toString()}`);
+}
+
+export async function listAllClients(search?: string) {
+  const items: ClientOption[] = [];
+  const seen = new Set<string>();
+  let cursor: string | undefined;
+  do {
+    const page = await listClients({ search, cursor, limit: 100 });
+    items.push(...page.items);
+    if (!page.nextCursor) break;
+    if (seen.has(page.nextCursor)) throw new Error("Client pagination returned a repeated cursor");
+    seen.add(page.nextCursor);
+    cursor = page.nextCursor;
+  } while (cursor);
+  return items;
+}
+
+export function createClient(input: {
+  code: string;
+  legalName: string;
+  displayName: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  slaHours: number;
+}) {
+  const contactPhone = toIndianMobileE164(input.contactPhone);
+  return apiRequest<ClientOption>("/clients", {
+    method: "POST",
+    body: JSON.stringify({ ...input, contactPhone }),
+  });
+}
+
+export function updateClient(
+  clientId: string,
+  input: {
+    version: number;
+    legalName?: string;
+    displayName?: string;
+    contactName?: string;
+    contactEmail?: string;
+    contactPhone?: string;
+    slaHours?: number;
+    status?: "ACTIVE" | "SUSPENDED";
+  },
+) {
+  const contactPhone = toIndianMobileE164(input.contactPhone);
+  return apiRequest<ClientOption>(`/clients/${clientId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ ...input, contactPhone }),
+  });
+}
+
+const priorityMap = { Standard: "NORMAL", Priority: "HIGH", Critical: "URGENT" } as const;
+
+export function listCaseServicePackages(clientId?: string) {
+  const query = clientId ? `?${new URLSearchParams({ clientId })}` : "";
+  return apiRequest<{ items: CaseServicePackage[] }>(`/cases/catalog${query}`);
+}
+
+export function createCase(draft: CaseDraft, idempotencyKey?: string) {
+  return apiRequest<{
+    id: string;
+    caseNumber: string;
+    status: string;
+    consentDelivery: {
+      consentId: string;
+      expiresAt: string;
+      developmentOtp?: string;
+    };
+  }>("/cases", {
+    method: "POST",
+    headers: idempotencyKey ? { "idempotency-key": idempotencyKey } : undefined,
+    body: JSON.stringify({
+      clientId: draft.clientId,
+      servicePackageId: draft.servicePackageId,
+      services: draft.services?.length
+        ? draft.services.map((service) => ({
+            ...service,
+            details: Object.fromEntries(
+              Object.entries(service.details ?? {})
+                .filter(([, value]) => value.trim())
+                .map(([key, value]) => [
+                  key,
+                  key === "gstin" ? value.trim().toUpperCase() : value.trim(),
+                ]),
+            ),
+          }))
+        : undefined,
+      fullName: draft.candidate,
+      email: draft.email || undefined,
+      phone: toIndianMobileE164(draft.phone),
+      priority: priorityMap[draft.priority],
+    }),
+  });
+}
+
+export function transitionCase(
+  caseId: string,
+  input: { status: string; version: number; reason?: string },
+) {
+  return apiRequest<CaseDetail>(`/cases/${caseId}/status`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+===== src\lib\backend-api\dashboards.ts =====
+import { apiDownload, apiRequest, saveBlob } from "./client";
+
+export interface OperationsDashboard {
+  summary: {
+    total: number;
+    overdue: number;
+    createdToday: number;
+    completedToday: number;
+  };
+  statusMix: Record<string, number>;
+  stageHealth?: Array<{
+    status: string;
+    count: number;
+    oldestAgeHours: number;
+    atRisk: number;
+  }>;
+  outcomeMix: Record<string, number>;
+  trend: Array<{ month: string; created: number; completed: number }>;
+  recentCases: Array<{
+    id: string;
+    caseNumber: string;
+    status: string;
+    priority: string;
+    dueAt: string | null;
+    updatedAt: string;
+    subject: { fullName: string };
+    client: { displayName: string };
+  }>;
+  generatedAt: string;
+}
+
+export interface ExecutiveDashboard extends OperationsDashboard {
+  performance: {
+    averageTatHours: number | null;
+    slaPercentage: number | null;
+    completedCases: number;
+  };
+  performanceTrend: Array<{
+    month: string;
+    created: number;
+    slaPercentage: number | null;
+    averageTatHours: number | null;
+    overdue: number;
+  }>;
+  riskMix: Record<string, number>;
+  attentionQueue: ExecutiveAttentionItem[];
+  clientPerformance: ExecutivePerformanceRow[];
+  branchPerformance: ExecutivePerformanceRow[];
+  stageAgeing: Array<{
+    status: string;
+    count: number;
+    averageAgeHours: number;
+    oldestAgeHours: number;
+    atRisk: number;
+  }>;
+  teamCapacity: Array<{
+    id: string;
+    name: string;
+    active: number;
+    completed: number;
+    overdue: number;
+  }>;
+  checkPerformance: Array<{
+    type: string;
+    total: number;
+    completed: number;
+    pending: number;
+    discrepancies: number;
+    unableToVerify: number;
+    averageTatHours: number | null;
+  }>;
+  businessHealth: {
+    crm: {
+      openPipeline: number;
+      weightedForecast: number;
+      closedWon: number;
+      winRate: number | null;
+    };
+    finance: { billed: number; collected: number; outstanding: number; overdue: number };
+  };
+  forecast: {
+    dueNext7Days: number;
+    atRiskNext7Days: number;
+    projectedCompletions7Days: number;
+    unassignedActive: number;
+  };
+  caseRegister: ExecutiveCase[];
+  filters: {
+    clients: Array<{ publicId: string; displayName: string }>;
+    branches: Array<{ publicId: string; name: string }>;
+    checkTypes: string[];
+    priorities: string[];
+    riskLevels: string[];
+    applied: ExecutiveDashboardFilters & { from: string; to: string };
+  };
+}
+
+export interface ExecutiveDashboardFilters {
+  months?: number;
+  from?: string;
+  to?: string;
+  clientId?: string;
+  branchId?: string;
+  checkType?: string;
+  priority?: string;
+  riskLevel?: string;
+}
+
+export interface ExecutiveCase {
+  id: string;
+  caseNumber: string;
+  status: string;
+  priority: string;
+  riskLevel: string;
+  createdAt: string;
+  completedAt: string | null;
+  dueAt: string | null;
+  updatedAt: string;
+  subject: { fullName: string };
+  client: { publicId: string; displayName: string };
+  branch: { publicId: string; name: string } | null;
+  owner: { publicId: string; displayName: string } | null;
+}
+
+export interface ExecutiveAttentionItem extends ExecutiveCase {
+  reasons: string[];
+  severity: number;
+  ageHours: number;
+}
+
+export interface ExecutivePerformanceRow {
+  id: string;
+  name: string;
+  total: number;
+  active: number;
+  completed: number;
+  overdue: number;
+  slaPercentage: number | null;
+  averageTatHours: number | null;
+}
+
+type ExceptionCase = {
+  publicId: string;
+  caseNumber: string;
+  subject: { fullName: string };
+  client: { displayName: string };
+};
+
+export interface ExceptionsDashboard {
+  summary: {
+    overdue: number;
+    clarifications: number;
+    fieldExceptions: number;
+    rejectedDocuments: number;
+    total: number;
+    uniqueCases: number;
+    critical: number;
+    resolvedToday: number;
+    averageAgeHours: number;
+    clientActions: number;
+  };
+  overdue: Array<{
+    id: string;
+    caseNumber: string;
+    status: string;
+    priority: string;
+    dueAt: string;
+    createdAt: string;
+    subject: { fullName: string };
+    client: { displayName: string };
+  }>;
+  clarifications: Array<{
+    id: string;
+    status: string;
+    subject: string;
+    dueAt?: string | null;
+    updatedAt: string;
+    createdAt: string;
+    latestMessage?: {
+      senderType: string;
+      body: string;
+      createdAt: string;
+    } | null;
+    case: ExceptionCase;
+  }>;
+  fieldVisits: Array<{
+    id: string;
+    address: string;
+    distanceMeters?: number | null;
+    geofenceMeters: number;
+    capturedAt?: string | null;
+    createdAt: string;
+    version: number;
+    case: ExceptionCase;
+    assignee?: { displayName: string } | null;
+  }>;
+  rejectedDocuments: Array<{
+    id: string;
+    type: string;
+    status: string;
+    updatedAt: string;
+    case: ExceptionCase;
+  }>;
+  generatedAt: string;
+}
+
+export interface ClientAnalyticsDashboard {
+  branches: Array<{
+    id: string | null;
+    name: string;
+    city: string | null;
+    total: number;
+    active: number;
+    completed: number;
+    cancelled: number;
+    overdue: number;
+    pendingDocuments: number;
+    clarifications: number;
+    completionPercent: number;
+  }>;
+  summary: {
+    totalChecks: number;
+    returnedOutcomes: number;
+    nonClear: number;
+    nonClearRate: number;
+    rejectedDocuments: number;
+    qaRework: number;
+  };
+  bottleneck: { status: string; count: number; oldestAgeHours: number } | null;
+  stageHealth: Array<{ status: string; count: number; oldestAgeHours: number }>;
+  checkHealth: Array<{
+    type: string;
+    total: number;
+    completed: number;
+    pending: number;
+    returned: number;
+    clear: number;
+    discrepancies: number;
+    unableToVerify: number;
+  }>;
+  documentHealth: Array<{
+    type: string;
+    total: number;
+    available: number;
+    verified: number;
+    rejected: number;
+  }>;
+  qaDecisions: Record<string, number>;
+  generatedAt: string;
+}
+
+export function getOperationsDashboard() {
+  return apiRequest<OperationsDashboard>("/dashboards/operations");
+}
+
+export function getClientAnalyticsDashboard() {
+  return apiRequest<ClientAnalyticsDashboard>("/dashboards/client");
+}
+
+export function getExecutiveDashboard(filters: ExecutiveDashboardFilters = {}) {
+  const query = executiveQuery(filters);
+  return apiRequest<ExecutiveDashboard>(`/dashboards/executive${query ? `?${query}` : ""}`);
+}
+
+export async function exportExecutiveDashboard(
+  format: "csv" | "pdf",
+  filters: ExecutiveDashboardFilters,
+) {
+  const query = executiveQuery({ ...filters, format } as ExecutiveDashboardFilters & {
+    format: string;
+  });
+  const blob = await apiDownload(`/dashboards/executive/export?${query}`);
+  saveBlob(blob, `Sapling-Global-Executive-${new Date().toISOString().slice(0, 10)}.${format}`);
+}
+
+export function scheduleExecutiveDashboard(
+  input: ExecutiveDashboardFilters & {
+    recipientEmail: string;
+    deliveryAt: string;
+    format: "pdf" | "csv";
+  },
+) {
+  return apiRequest<{ scheduled: true; id: string; deliveryAt: string }>(
+    "/dashboards/executive/schedule",
+    { method: "POST", body: JSON.stringify(input) },
+  );
+}
+
+export function getExceptionsDashboard() {
+  return apiRequest<ExceptionsDashboard>("/dashboards/exceptions");
+}
+
+function executiveQuery(filters: ExecutiveDashboardFilters & { format?: string }) {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") params.set(key, String(value));
+  });
+  return params.toString();
+}
+===== src\lib\backend-api\crm.ts =====
+import { apiRequest } from "./client";
+import { toIndianMobileE164 } from "@/lib/indian-mobile";
+
+export const opportunityStages = [
+  "NEW",
+  "QUALIFIED",
+  "PROPOSAL",
+  "NEGOTIATION",
+  "WON",
+  "LOST",
+] as const;
+export type OpportunityStage = (typeof opportunityStages)[number];
+
+export type CrmLeadSource =
+  "INBOUND" | "OUTBOUND" | "REFERRAL" | "EVENT" | "PARTNER" | "MARKETPLACE";
+
+export interface CrmSettingsResponse {
+  id: string | null;
+  stageProbabilities: Record<OpportunityStage, number>;
+  leadSources: CrmLeadSource[];
+  version: number;
+  updatedAt: string | null;
+  canEdit: boolean;
+}
+
+export interface Opportunity {
+  id: string;
+  companyName: string;
+  city?: string | null;
+  industry?: string | null;
+  contactName: string;
+  contactTitle?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  stage: OpportunityStage;
+  source?: string | null;
+  estimatedValue: string | number;
+  probability: number;
+  expectedCloseDate?: string | null;
+  nextFollowUpAt?: string | null;
+  notes?: string | null;
+  lostReason?: string | null;
+  closedAt?: string | null;
+  onboardingHandoffAt?: string | null;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+  owner?: { publicId: string; displayName: string; email: string } | null;
+  client?: { publicId: string; displayName: string } | null;
+}
+
+export interface SalesActivity {
+  id: string;
+  type: string;
+  summary: string;
+  occurredAt: string;
+  actor: { displayName: string };
+}
+
+export interface SalesActivityListItem extends SalesActivity {
+  opportunity: { id: string; companyName: string; contactName: string };
+}
+
+export type OpportunityDetail = Opportunity & { activities: SalesActivity[] };
+
+export interface SalesOwner {
+  id: string;
+  displayName: string;
+  email: string;
+  branch?: { name: string } | null;
+  activeOpportunities: number;
+  pipelineValue: number;
+  weightedForecast: number;
+  wonRevenue: number;
+  winRate: number;
+  overdueFollowUps: number;
+  activitiesThisWeek: number;
+  closingThisMonth: number;
+}
+
+export interface CrmOverview {
+  summary: {
+    openCount: number;
+    openValue: number;
+    weightedValue: number;
+    wonValue: number;
+    activeOwners: number;
+    wonCount: number;
+    lostCount: number;
+    winRate: number;
+    pendingFollowUps: number;
+    overdueFollowUps: number;
+    unassignedOpportunities: number;
+  };
+  stages: Array<{
+    stage: string;
+    count: number;
+    value: number;
+    weightedValue: number;
+    averageAgeDays: number | null;
+    conversionFromPrevious: number | null;
+    overdueFollowUps: number;
+  }>;
+  trend: Array<{
+    month: string;
+    pipelineValue: number;
+    weightedValue: number;
+    wonValue: number;
+    winRate: number;
+    activeOwners: number;
+  }>;
+  activities: Array<{
+    id: string;
+    type: string;
+    summary: string;
+    occurredAt: string;
+    actor: { displayName: string };
+    opportunity: { publicId: string; companyName: string; contactName: string };
+  }>;
+  followUps: Array<{
+    opportunityId: string;
+    companyName: string;
+    contactName: string;
+    ownerName: string | null;
+    stage: OpportunityStage;
+    estimatedValue: number;
+    dueAt: string;
+    notes: string | null;
+    lastActivityAt: string;
+  }>;
+  generatedAt: string;
+}
+
+export function getCrmOverview() {
+  return apiRequest<CrmOverview>("/crm/overview");
+}
+export function listOpportunities(input: OpportunityListInput = {}) {
+  const query = new URLSearchParams();
+  Object.entries(input).forEach(([key, value]) => {
+    if (value !== undefined && key !== "limit") query.set(key, String(value));
+  });
+  query.set("limit", String(input.limit ?? 25));
+  return apiRequest<OpportunityListResponse>(`/crm/opportunities?${query.toString()}`);
+}
+
+export function getOpportunity(id: string) {
+  return apiRequest<OpportunityDetail>(`/crm/opportunities/${id}`);
+}
+
+export function listSalesOwners() {
+  return apiRequest<{ items: SalesOwner[] }>("/crm/owners");
+}
+
+export function getCrmSettings() {
+  return apiRequest<CrmSettingsResponse>("/crm/settings");
+}
+
+export function updateCrmSettings(input: {
+  version: number;
+  stageProbabilities: Record<OpportunityStage, number>;
+  leadSources: CrmLeadSource[];
+}) {
+  return apiRequest<CrmSettingsResponse>("/crm/settings", {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
+export function listSalesActivities(input: {
+  search?: string;
+  type?: string;
+  owner?: string;
+  page?: number;
+  limit?: number;
+}) {
+  const query = new URLSearchParams();
+  Object.entries(input).forEach(([key, value]) => {
+    if (value !== undefined) query.set(key, String(value));
+  });
+  return apiRequest<{
+    items: SalesActivityListItem[];
+    total: number;
+    page: number;
+    pageSize: number;
+  }>(`/crm/activities?${query.toString()}`);
+}
+export function createOpportunity(input: {
+  companyName: string;
+  city?: string;
+  industry?: string;
+  contactName: string;
+  contactTitle?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  ownerId?: string;
+  source?: string;
+  estimatedValue: number;
+  probability: number;
+  expectedCloseDate: string;
+  nextFollowUpAt?: string;
+  notes?: string;
+}) {
+  const contactPhone = toIndianMobileE164(input.contactPhone);
+  return apiRequest<Opportunity>("/crm/opportunities", {
+    method: "POST",
+    body: JSON.stringify({ ...input, contactPhone }),
+  });
+}
+export function updateOpportunity(
+  id: string,
+  input: {
+    version: number;
+    stage?: OpportunityStage;
+    probability?: number;
+    ownerId?: string | null;
+    estimatedValue?: number;
+    expectedCloseDate?: string;
+    nextFollowUpAt?: string;
+    notes?: string | null;
+    lostReason?: string;
+    companyName?: string;
+    city?: string | null;
+    industry?: string | null;
+    contactName?: string;
+    contactTitle?: string | null;
+    contactEmail?: string;
+    contactPhone?: string;
+    source?: string;
+    activitySummary?: string;
+  },
+) {
+  const contactPhone = toIndianMobileE164(input.contactPhone);
+  return apiRequest<Opportunity>(`/crm/opportunities/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ ...input, contactPhone }),
+  });
+}
+
+export function addSalesActivity(
+  id: string,
+  input: {
+    type: "CALL" | "EMAIL" | "MEETING" | "NOTE" | "FOLLOW_UP";
+    summary: string;
+    occurredAt?: string;
+    nextFollowUpAt?: string;
+  },
+) {
+  return apiRequest<SalesActivity>(`/crm/opportunities/${id}/activities`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function completeSalesFollowUp(id: string, input: { version: number; notes?: string }) {
+  return apiRequest<{
+    opportunityId: string;
+    completedAt: string;
+    version: number;
+  }>(`/crm/opportunities/${id}/follow-up/complete`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function prepareSalesOnboarding(id: string, version: number) {
+  return apiRequest<{ opportunityId: string; preparedAt: string; version: number }>(
+    `/crm/opportunities/${id}/onboarding-handoff`,
+    { method: "POST", body: JSON.stringify({ version }) },
+  );
+}
+
+interface OpportunityListInput {
+  stage?: string;
+  search?: string;
+  cursor?: string;
+  limit?: number;
+  page?: number;
+  owner?: string;
+  source?: string;
+  minValue?: number;
+  maxValue?: number;
+  minProbability?: number;
+  maxProbability?: number;
+  closeFrom?: string;
+  closeTo?: string;
+  followUp?: string;
+  sort?: string;
+  savedView?: string;
+}
+
+interface OpportunityListResponse {
+  items: Opportunity[];
+  nextCursor: string | null;
+  total: number;
+  page: number;
+  pageSize: number;
+}
+===== src\lib\backend-api\qa.ts =====
+import { apiRequest } from "./client";
+
+export interface QaQueueItem {
+  id: string;
+  caseNumber: string;
+  priority: string;
+  dueAt?: string | null;
+  version: number;
+  createdAt: string;
+  qaClaimedAt?: string | null;
+  qaReviewer?: { publicId: string; displayName: string } | null;
+  subject: { publicId: string; fullName: string };
+  client: { publicId: string; displayName: string };
+  checks: Array<{
+    publicId: string;
+    type: string;
+    result?: string | null;
+    riskLevel?: string | null;
+    status: string;
+    sourceSummary?: string | null;
+    updatedAt: string;
+    findings: Array<{
+      publicId: string;
+      kind: string;
+      severity: string;
+      title: string;
+      description: string;
+      source?: string | null;
+    }>;
+    tasks: Array<{
+      completedAt?: string | null;
+      completedBy?: { publicId: string; displayName: string } | null;
+    }>;
+  }>;
+  documents: Array<{
+    publicId: string;
+    type: string;
+    status: string;
+    currentVersion: number;
+    versions: Array<{
+      originalName: string;
+      contentType: string;
+      sha256: string;
+      malwareState: string;
+      createdAt: string;
+    }>;
+  }>;
+  fieldVisits: Array<{
+    publicId: string;
+    status: string;
+    address: string;
+    distanceMeters?: string | number | null;
+    capturedAt?: string | null;
+    evidence: Array<{
+      publicId: string;
+      type: string;
+      sha256: string;
+      capturedAt: string;
+    }>;
+  }>;
+}
+
+export function getQaQueue(input: { search?: string; cursor?: string; limit?: number } = {}) {
+  const query = new URLSearchParams();
+  if (input.search) query.set("search", input.search);
+  if (input.cursor) query.set("cursor", input.cursor);
+  query.set("limit", String(input.limit ?? 25));
+  return apiRequest<{
+    items: QaQueueItem[];
+    nextCursor: string | null;
+    summary: { awaiting: number; overdue: number; highRisk: number; claimed: number };
+  }>(`/qa/queue?${query.toString()}`);
+}
+
+export function claimQaCase(caseId: string, caseVersion: number) {
+  return apiRequest<{ id: string; claimedBy: string; caseVersion: number }>(
+    `/qa/cases/${caseId}/claim`,
+    { method: "POST", body: JSON.stringify({ caseVersion }) },
+  );
+}
+
+export function changeQaReservation(
+  caseId: string,
+  caseVersion: number,
+  action: "renew" | "release",
+) {
+  return apiRequest<{ id: string; caseVersion: number }>(`/qa/cases/${caseId}/${action}`, {
+    method: "POST",
+    body: JSON.stringify({ caseVersion }),
+  });
+}
+
+export function submitQaDecision(
+  caseId: string,
+  input: {
+    decision: "APPROVED" | "REWORK";
+    caseVersion: number;
+    checklist: string[];
+    notes?: string;
+    reworkCheckIds: string[];
+  },
+) {
+  return apiRequest<{
+    id: string;
+    decision: string;
+    caseStatus: string;
+    caseVersion: number;
+  }>(`/qa/cases/${caseId}/decision`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+===== src\features\operations\dispatch\dispatch-api.ts =====
+import { apiRequest } from "@/lib/backend-api/client";
+
+export type DispatchCheck = {
+  id: string;
+  type: string;
+  checkVersion: number;
+  taskId?: string;
+  version?: number;
+};
+export type DispatchCase = {
+  id: string;
+  caseNumber: string;
+  candidateName: string;
+  clientName: string;
+  branchName: string;
+  status: string;
+  version: number;
+  ready: boolean;
+  issues: string[];
+  checks: DispatchCheck[];
+  eligibleVerifierIds: string[];
+};
+export type DispatchVerifier = {
+  id: string;
+  name: string;
+  email: string;
+  branchName: string;
+  activeChecks: number;
+  overdue: number;
+};
+export type DispatchPreview = {
+  cases: DispatchCase[];
+  verifiers: DispatchVerifier[];
+  unavailableIds: string[];
+  verifierLimitReached: boolean;
+  workloadScope: string;
+};
+export type DispatchBody = {
+  operationId: string;
+  version: number;
+  instructions?: string;
+  allocations: {
+    checkId: string;
+    assigneeId: string;
+    checkVersion: number;
+    taskId?: string;
+    version?: number;
+  }[];
+};
+export type DispatchResult = {
+  caseId: string;
+  assigned: number;
+  started: boolean;
+  version: number;
+};
+export type DispatchProgress = {
+  status: "waiting" | "saving" | "success" | "error";
+  message?: string;
+  assigned?: number;
+};
+
+export function previewDispatch(caseIds: string[], signal?: AbortSignal) {
+  return apiRequest<DispatchPreview>(
+    `/cases/dispatch/preview?${new URLSearchParams({ caseIds: caseIds.join(",") })}`,
+    { signal },
+  );
+}
+export function commitDispatch(caseId: string, body: DispatchBody, key: string) {
+  return apiRequest<DispatchResult>(`/cases/dispatch/${caseId}/commit`, {
+    method: "POST",
+    headers: { "Idempotency-Key": key },
+    body: JSON.stringify(body),
+  });
+}
+
+export function buildDispatchBody(
+  record: DispatchCase,
+  allocations: Record<string, string>,
+  operationId: string,
+  instructions: string,
+): DispatchBody {
+  if (!record.ready || !record.checks.length) throw new Error("Case is not ready for dispatch");
+  return {
+    operationId,
+    version: record.version,
+    ...(instructions.trim() ? { instructions: instructions.trim() } : {}),
+    allocations: record.checks.map((check) => {
+      const assigneeId = allocations[check.id];
+      if (!assigneeId || !record.eligibleVerifierIds.includes(assigneeId))
+        throw new Error("Choose an eligible verifier for every check");
+      return {
+        checkId: check.id,
+        checkVersion: check.checkVersion,
+        assigneeId,
+        ...(check.taskId ? { taskId: check.taskId, version: check.version } : {}),
+      };
+    }),
+  };
+}
+
+/** A bounded batch, not one unbounded transaction or a request for every case at once. */
+export async function runDispatchBatch<T>(
+  items: T[],
+  work: (item: T) => Promise<void>,
+  isActive: () => boolean = () => true,
+) {
+  let next = 0;
+  const worker = async () => {
+    while (next < items.length && isActive()) {
+      const item = items[next++];
+      if (item !== undefined) await work(item);
+    }
+  };
+  await Promise.all([worker(), worker()]);
+}
