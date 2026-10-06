@@ -73,7 +73,7 @@ src/
 - The sidebar menu → `src/layout/navigation.ts`
 - The logo → replace `src/assets/sapling-logo.png`
 - The sample data → `src/sample-data/<page>.ts`
-- Sample data vs real API → `VITE_USE_SAMPLE_DATA` in `.env`
+- Sample data vs real API → `VITE_USE_SAMPLE_DATA=true for sample data and VITE_USE_SAMPLE_DATA=false` for real api data in `.env`
 
 ## Connecting the API
 
